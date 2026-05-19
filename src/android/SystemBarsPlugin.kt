@@ -1,4 +1,4 @@
-package com.custom.outsystems.systembars
+package io.github.promonteiro89.systembars
 
 import android.content.res.Configuration
 import android.graphics.Color
