@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
-        id="com.custom.outsystems.systembars"
+        id="io.github.promonteiro89.systembars"
         version="1.0.0">
 
     <name>CustomSystemBars</name>
@@ -20,7 +20,7 @@
 
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="CustomSystemBars">
-                <param name="android-package" value="com.custom.outsystems.systembars.SystemBarsPlugin" />
+                <param name="android-package" value="io.github.promonteiro89.systembars.SystemBarsPlugin" />
                 <param name="onload" value="true" />
             </feature>
         </config-file>
@@ -28,7 +28,7 @@
         <framework src="androidx.core:core:1.13.1" />
 
         <source-file src="src/android/SystemBarsPlugin.kt"
-                     target-dir="src/com/custom/outsystems/systembars" />
+                     target-dir="src/io/github/promonteiro89/systembars" />
     </platform>
 
     <!-- iOS -->
