@@ -22,6 +22,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [`setAnimation(options)`](#setanimationoptions)
 - [Style semantics](#style-semantics)
 - [Declarative configuration (MABS 12 preferences)](#declarative-configuration-mabs-12-preferences)
+  - [Where to set the preferences](#where-to-set-the-preferences)
 - [Platform notes](#platform-notes)
 - [Required theme CSS](#required-theme-css)
 - [Differences from Capacitor's SystemBars](#differences-from-capacitors-systembars)
@@ -163,7 +164,9 @@ MABS 12 / `cordova-android` 14 exposes four native Cordova preferences that cove
 
 > ⚠️ **Glyph-color vs background-tone**: MABS's `EdgeToEdgeGlyphTheme` is the *opposite* convention of Capacitor's `style`. MABS `light` (light glyphs) matches our `setStyle({ style: 'DARK' })` (dark background → light icons), and MABS `dark` (dark glyphs) matches `setStyle({ style: 'LIGHT' })`.
 
-### Extensibility Configurations template
+### Where to set the preferences
+
+These preferences belong in the **consuming OutSystems mobile app's** Extensibility Configurations — the same property where you added the plugin install URL — and not in this plugin's repository. Add only the ones you care about:
 
 ```json
 {
@@ -174,6 +177,19 @@ MABS 12 / `cordova-android` 14 exposes four native Cordova preferences that cove
       { "name": "StatusBarBackgroundColor", "value": "#000000" },
       { "name": "NavigationBarBackgroundColor", "value": "#000000" }
     ]
+  }
+}
+```
+
+If you also need the plugin install entry in the same JSON, merge the two objects:
+
+```json
+{
+  "preferences": {
+    "global": [
+      { "name": "AndroidEdgeToEdge", "value": "true" },
+      { "name": "EdgeToEdgeGlyphTheme", "value": "light" }
+    ]
   },
   "plugin": {
     "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
@@ -181,7 +197,7 @@ MABS 12 / `cordova-android` 14 exposes four native Cordova preferences that cove
 }
 ```
 
-Drop any preference you don't need — they're all optional. The runtime JavaScript API (`setStyle`, `show`, `hide`, `setAnimation`) takes over after launch and overrides whatever appearance the preferences set.
+All four preferences are optional and independent — drop any you don't need. The runtime JavaScript API (`setStyle`, `show`, `hide`, `setAnimation`) takes over after launch and overrides whatever appearance the preferences set.
 
 ## Platform notes
 
