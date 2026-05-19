@@ -21,6 +21,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [`hide(options?)`](#hideoptions)
   - [`setAnimation(options)`](#setanimationoptions)
 - [Style semantics](#style-semantics)
+- [Declarative configuration (MABS 12 preferences)](#declarative-configuration-mabs-12-preferences)
 - [Platform notes](#platform-notes)
 - [Required theme CSS](#required-theme-css)
 - [Differences from Capacitor's SystemBars](#differences-from-capacitors-systembars)
@@ -29,16 +30,16 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
 
 ## Why this exists
 
-OutSystems 11 / MABS 12 apps run on Cordova and do not have a built-in way to drive edge-to-edge layout, status bar styling, or system-bar visibility through a clean Promise-based API. This plugin fills that gap. The JavaScript surface mirrors Capacitor's `SystemBars` plugin so the contract is familiar and well-documented — but the implementation is pure Cordova, with native code in Kotlin and Swift.
+MABS 12 / `cordova-android` 14 already cover the **declarative** side of system-bar configuration through native preferences (`AndroidEdgeToEdge`, `EdgeToEdgeGlyphTheme`, `StatusBarBackgroundColor`, `NavigationBarBackgroundColor`). What they do **not** offer is a clean **runtime** Promise-based API to change the status-bar style, hide bars temporarily, or animate transitions from JavaScript. This plugin fills that gap, exposing the same JavaScript surface as Capacitor's `SystemBars` plugin so the contract is familiar and well-documented. The plugin deliberately does not override the MABS preferences — set them in your Extensibility Configurations and they take effect.
 
 ## Features
 
-- Edge-to-edge layout on Android (API 24+), enforced on API 35+.
-- Status bar and navigation bar control on Android; status bar control on iOS.
-- Independent control of icon/text appearance per bar (`StatusBar` / `NavigationBar`).
+- Runtime style toggling per bar (`StatusBar` / `NavigationBar`) from JavaScript.
+- Runtime visibility control with `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE` on Android so the user can still swipe to reveal hidden bars.
 - Promise-based JavaScript API, identical to Capacitor's.
 - Configurable show/hide animation on iOS (`NONE` / `SLIDE` / `FADE`).
 - Bakes `UIViewControllerBasedStatusBarAppearance = true` into the iOS `Info.plist` automatically.
+- Does not fight MABS 12 platform preferences — declarative startup configuration is left entirely to the platform.
 
 ## Requirements
 
@@ -61,7 +62,7 @@ Paste this into the **Extensibility Configurations** property of your OutSystems
 ```json
 {
   "plugin": {
-    "url": "https://github.com/promonteiro/cordova-plugin-system-bars.git#1.0.0"
+    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
   }
 }
 ```
@@ -73,7 +74,7 @@ Pin the tag (`#1.0.0`) so MABS does not silently pull breaking changes.
 For local testing in a vanilla Cordova project:
 
 ```sh
-cordova plugin add https://github.com/promonteiro/cordova-plugin-system-bars.git#1.0.0
+cordova plugin add https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0
 ```
 
 ## Usage
@@ -149,13 +150,46 @@ Sets the transition used when the status bar appearance changes.
 
 This mapping is taken verbatim from [Capacitor's `SystemBarsStyle`](https://capacitorjs.com/docs/apis/system-bars#systembarsstyle).
 
+## Declarative configuration (MABS 12 preferences)
+
+MABS 12 / `cordova-android` 14 exposes four native Cordova preferences that cover the **startup** appearance of the system bars. They are applied by the platform itself — this plugin does not override them, so they remain available to OutSystems developers via Extensibility Configurations.
+
+| Preference | Type | Description |
+|------------|------|-------------|
+| `AndroidEdgeToEdge` | `true` / `false` | Whether the app draws edge-to-edge on Android. Enforced as `true` on Android 15 (API 35+) regardless of this setting. |
+| `EdgeToEdgeGlyphTheme` | `dark` / `light` | Color of system-bar glyphs (icons and text) when edge-to-edge is enabled. `dark` = dark glyphs (use on light backgrounds); `light` = light glyphs (use on dark backgrounds). Falls back to luminance-based detection if not set or invalid. |
+| `StatusBarBackgroundColor` | `#RRGGBB` | Status bar background color. Only takes effect when edge-to-edge is **disabled**. |
+| `NavigationBarBackgroundColor` | `#RRGGBB` | Navigation bar background color. Only takes effect when edge-to-edge is **disabled**. |
+
+> ⚠️ **Glyph-color vs background-tone**: MABS's `EdgeToEdgeGlyphTheme` is the *opposite* convention of Capacitor's `style`. MABS `light` (light glyphs) matches our `setStyle({ style: 'DARK' })` (dark background → light icons), and MABS `dark` (dark glyphs) matches `setStyle({ style: 'LIGHT' })`.
+
+### Extensibility Configurations template
+
+```json
+{
+  "preferences": {
+    "global": [
+      { "name": "AndroidEdgeToEdge", "value": "true" },
+      { "name": "EdgeToEdgeGlyphTheme", "value": "light" },
+      { "name": "StatusBarBackgroundColor", "value": "#000000" },
+      { "name": "NavigationBarBackgroundColor", "value": "#000000" }
+    ]
+  },
+  "plugin": {
+    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
+  }
+}
+```
+
+Drop any preference you don't need — they're all optional. The runtime JavaScript API (`setStyle`, `show`, `hide`, `setAnimation`) takes over after launch and overrides whatever appearance the preferences set.
+
 ## Platform notes
 
 ### Android
 
 - Implemented in Kotlin. The plugin enables the Kotlin Gradle plugin via the `GradlePluginKotlinEnabled` Cordova preference and pins `GradlePluginKotlinVersion` to `1.9.24`.
-- Edge-to-edge is enabled in `initialize()` via `WindowCompat.setDecorFitsSystemWindows(window, false)`.
-- On API < 35, `statusBarColor` and `navigationBarColor` are forced to transparent. On API 35+ those setters are no-ops because edge-to-edge is enforced by the platform.
+- Edge-to-edge and bar colors are **not** forced by this plugin. They are controlled by the MABS 12 preferences described in [Declarative configuration](#declarative-configuration-mabs-12-preferences); on Android 15 (API 35+) the platform itself enforces edge-to-edge regardless of `AndroidEdgeToEdge`.
+- Style changes use `WindowInsetsControllerCompat.isAppearanceLight*Bars`.
 - Visibility uses `WindowInsetsControllerCompat.show()` / `hide()` with `WindowInsetsCompat.Type.statusBars()`, `navigationBars()`, or `systemBars()` as appropriate.
 
 ### iOS
@@ -167,7 +201,7 @@ This mapping is taken verbatim from [Capacitor's `SystemBarsStyle`](https://capa
 
 ## Required theme CSS
 
-Because edge-to-edge is forced, your app's chrome must paint behind the system bars and respect safe-area insets:
+When edge-to-edge is enabled (default on Android 15, or whenever `AndroidEdgeToEdge=true` is set), your app's chrome must paint behind the system bars and respect safe-area insets:
 
 ```css
 :root {

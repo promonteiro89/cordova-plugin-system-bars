@@ -1,15 +1,11 @@
 package io.github.promonteiro89.systembars
 
 import android.content.res.Configuration
-import android.graphics.Color
-import android.os.Build
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
 import org.apache.cordova.CallbackContext
-import org.apache.cordova.CordovaInterface
 import org.apache.cordova.CordovaPlugin
-import org.apache.cordova.CordovaWebView
 import org.json.JSONArray
 import org.json.JSONObject
 
@@ -19,21 +15,6 @@ class SystemBarsPlugin : CordovaPlugin() {
     // system-bar animations via WindowInsetsController; this value is recorded
     // but not used to override the platform animation.
     private var currentAnimation: String = "FADE"
-
-    override fun initialize(cordova: CordovaInterface, webView: CordovaWebView) {
-        super.initialize(cordova, webView)
-        cordova.activity.runOnUiThread {
-            try {
-                val window = cordova.activity.window
-                WindowCompat.setDecorFitsSystemWindows(window, false)
-                if (Build.VERSION.SDK_INT < 35) {
-                    window.statusBarColor = Color.TRANSPARENT
-                    window.navigationBarColor = Color.TRANSPARENT
-                }
-            } catch (_: Exception) {
-            }
-        }
-    }
 
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
         when (action) {
