@@ -21,6 +21,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [`hide(options?)`](#hideoptions)
   - [`setAnimation(options)`](#setanimationoptions)
 - [Style semantics](#style-semantics)
+- [Startup preferences (Extensibility Configurations)](#startup-preferences-extensibility-configurations)
 - [Platform notes](#platform-notes)
 - [Required theme CSS](#required-theme-css)
 - [Differences from Capacitor's SystemBars](#differences-from-capacitors-systembars)
@@ -148,6 +149,43 @@ Sets the transition used when the status bar appearance changes.
 | `'DEFAULT'` | Follow the system theme               | derived from `uiMode` (night → light icons) | `.default` |
 
 This mapping is taken verbatim from [Capacitor's `SystemBarsStyle`](https://capacitorjs.com/docs/apis/system-bars#systembarsstyle).
+
+## Startup preferences (Extensibility Configurations)
+
+The plugin reads a single OutSystems-style preference at app launch, matching the standard `cordova-plugin-statusbar` template name so existing OutSystems documentation snippets work without changes:
+
+```json
+{
+  "preferences": {
+    "global": [
+      {
+        "name": "StatusBarStyle",
+        "value": "lightcontent"
+      }
+    ]
+  },
+  "plugin": {
+    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
+  }
+}
+```
+
+| Value | Effect | Equivalent JS call |
+|-------|--------|--------------------|
+| `lightcontent` | Light icons on a dark background | `setStyle({ style: 'DARK' })` |
+| `darkcontent`  | Dark icons on a light background | `setStyle({ style: 'LIGHT' })` |
+| `default`      | Follow the system theme          | `setStyle({ style: 'DEFAULT' })` |
+
+The preference name is case-insensitive on Android and lowercased automatically on iOS. Calling `setStyle()` from JavaScript at runtime overrides whatever was set declaratively.
+
+### Not supported
+
+The following preferences from the OutSystems status-bar template are **intentionally not implemented** because they conflict with the edge-to-edge model this plugin enforces:
+
+- `StatusBarBackgroundColor` — a solid background color contradicts the transparent, content-behind-bars layout the plugin sets up.
+- `StatusBarOverlaysWebView` — the WebView already extends behind the system bars unconditionally; there is no opt-out.
+
+Unknown preference values are silently ignored so a misconfigured template never breaks app launch.
 
 ## Platform notes
 

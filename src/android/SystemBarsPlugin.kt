@@ -22,6 +22,7 @@ class SystemBarsPlugin : CordovaPlugin() {
 
     override fun initialize(cordova: CordovaInterface, webView: CordovaWebView) {
         super.initialize(cordova, webView)
+        val startupStyle = preferences.getString("StatusBarStyle", null)?.lowercase()
         cordova.activity.runOnUiThread {
             try {
                 val window = cordova.activity.window
@@ -30,9 +31,28 @@ class SystemBarsPlugin : CordovaPlugin() {
                     window.statusBarColor = Color.TRANSPARENT
                     window.navigationBarColor = Color.TRANSPARENT
                 }
+                applyStartupStyle(startupStyle)
             } catch (_: Exception) {
             }
         }
+    }
+
+    private fun applyStartupStyle(value: String?) {
+        if (value == null) return
+        val window = cordova.activity.window
+        val controller = WindowCompat.getInsetsController(window, window.decorView) ?: return
+        val appearanceLight = when (value) {
+            "lightcontent" -> false                        // light icons → dark background
+            "darkcontent"  -> true                         // dark icons → light background
+            "default" -> {
+                val night = cordova.activity.resources.configuration.uiMode and
+                        Configuration.UI_MODE_NIGHT_MASK
+                night != Configuration.UI_MODE_NIGHT_YES
+            }
+            else -> return                                 // unknown value — silently ignore
+        }
+        controller.isAppearanceLightStatusBars = appearanceLight
+        controller.isAppearanceLightNavigationBars = appearanceLight
     }
 
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {

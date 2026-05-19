@@ -19,8 +19,29 @@ public class CDVSystemBarsPlugin: CDVPlugin {
 
     public override func pluginInitialize() {
         super.pluginInitialize()
+        applyStartupStyle()
         DispatchQueue.main.async {
             self.viewController?.setNeedsStatusBarAppearanceUpdate()
+        }
+    }
+
+    private func applyStartupStyle() {
+        // Cordova-iOS lowercases preference keys when reading config.xml.
+        let raw = (commandDelegate?.settings["statusbarstyle"] as? String)?.lowercased()
+        guard let raw = raw else { return }
+        switch raw {
+        case "lightcontent":
+            CDVSystemBarsPlugin.currentStyle = .lightContent
+        case "darkcontent":
+            if #available(iOS 13.0, *) {
+                CDVSystemBarsPlugin.currentStyle = .darkContent
+            } else {
+                CDVSystemBarsPlugin.currentStyle = .default
+            }
+        case "default":
+            CDVSystemBarsPlugin.currentStyle = .default
+        default:
+            return  // unknown value — silently ignore
         }
     }
 
