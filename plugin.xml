@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
+        id="com.custom.outsystems.systembars"
+        version="1.0.0">
+
+    <name>CustomSystemBars</name>
+    <description>Cordova port of Capacitor's SystemBars API for OutSystems 11 / MABS 12. Provides edge-to-edge status bar and navigation bar control on Android and iOS.</description>
+    <license>MIT</license>
+    <keywords>cordova,outsystems,system-bars,status-bar,navigation-bar,edge-to-edge</keywords>
+
+    <js-module src="www/systembars.js" name="CustomSystemBars">
+        <clobbers target="window.CustomSystemBars" />
+    </js-module>
+
+    <!-- Android -->
+    <platform name="android">
+        <preference name="GradlePluginKotlinEnabled" value="true" />
+        <preference name="GradlePluginKotlinCodeStyle" value="official" />
+        <preference name="GradlePluginKotlinVersion" value="1.9.24" />
+
+        <config-file target="res/xml/config.xml" parent="/*">
+            <feature name="CustomSystemBars">
+                <param name="android-package" value="com.custom.outsystems.systembars.SystemBarsPlugin" />
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <framework src="androidx.core:core:1.13.1" />
+
+        <source-file src="src/android/SystemBarsPlugin.kt"
+                     target-dir="src/com/custom/outsystems/systembars" />
+    </platform>
+
+    <!-- iOS -->
+    <platform name="ios">
+        <preference name="deployment-target" value="13.0" />
+        <preference name="SwiftVersion" value="5" />
+
+        <config-file target="config.xml" parent="/*">
+            <feature name="CustomSystemBars">
+                <param name="ios-package" value="CDVSystemBarsPlugin" />
+                <param name="onload" value="true" />
+            </feature>
+        </config-file>
+
+        <config-file target="*-Info.plist" parent="UIViewControllerBasedStatusBarAppearance">
+            <true/>
+        </config-file>
+
+        <source-file src="src/ios/CDVSystemBarsPlugin.swift" />
+    </platform>
+
+</plugin>
