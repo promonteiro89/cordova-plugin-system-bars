@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "description": "Cordova port of Capacitor's SystemBars API for OutSystems 11 / MABS 12. Edge-to-edge system bar control on Android and iOS.",
   "cordova": {
-    "id": "com.custom.outsystems.systembars",
+    "id": "io.github.promonteiro89.systembars",
     "platforms": [
       "android",
       "ios"
