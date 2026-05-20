@@ -123,6 +123,17 @@ public class CDVSystemBarsPlugin: CDVPlugin {
             self.commandDelegate.send(result, callbackId: command.callbackId)
         }
     }
+
+    @objc(setColor:)
+    func setColor(_ command: CDVInvokedUrlCommand) {
+        // iOS has no API to set the status-bar or navigation-bar background
+        // separately from the app's own content. Resolve successfully for
+        // cross-platform parity; the documented pattern is to paint the
+        // header/footer in the app's view and let it extend behind the
+        // system bars via safe-area insets.
+        let result = CDVPluginResult(status: CDVCommandStatus_OK)
+        self.commandDelegate.send(result, callbackId: command.callbackId)
+    }
 }
 
 extension CDVViewController {

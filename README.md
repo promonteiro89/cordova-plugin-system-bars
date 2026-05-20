@@ -21,6 +21,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [`show(options?)`](#showoptions)
   - [`hide(options?)`](#hideoptions)
   - [`setAnimation(options)`](#setanimationoptions)
+  - [`setColor(options)`](#setcoloroptions)
 - [Style semantics](#style-semantics)
 - [Declarative configuration (MABS 12 preferences)](#declarative-configuration-mabs-12-preferences)
   - [Where to set the preferences](#where-to-set-the-preferences)
@@ -99,6 +100,9 @@ window.CustomSystemBars.show();
 
 // Animate subsequent status-bar visibility changes on iOS
 window.CustomSystemBars.setAnimation({ animation: 'SLIDE' });
+
+// Tint both bars black (Android only)
+window.CustomSystemBars.setColor({ color: '#000000' });
 ```
 
 All methods return a `Promise<void>` that rejects with a string error message on failure.
@@ -139,6 +143,22 @@ Sets the transition used when the status bar appearance changes.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `options.animation` | `'NONE' \| 'SLIDE' \| 'FADE'` | yes | iOS maps to `UIStatusBarAnimation`. Android records the value for API parity but the platform composes its own animation. |
+
+### `setColor(options)`
+
+> Plugin extension — **not** part of Capacitor's `SystemBars` API. Provided for parity with the legacy `cordova-plugin-statusbar` ergonomics so the runtime can tint the bars.
+
+Sets the background color of the status bar, the navigation bar, or both. Android-only effective behavior.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `options.color` | `'#RRGGBB'` or `'#AARRGGBB'` | yes | Hex color string parseable by Android's `Color.parseColor`. |
+| `options.bar` | `'StatusBar' \| 'NavigationBar'` | no | Restrict to a single bar. Omit to apply to both. |
+
+Important caveats:
+
+- **Android 15+ (API 35+)**: `window.statusBarColor` and `window.navigationBarColor` are platform-level no-ops because edge-to-edge is enforced. The call still resolves successfully so cross-platform code doesn't need to branch on OS version. If you need a colored bar on Android 15, disable edge-to-edge declaratively with `AndroidEdgeToEdge=false` in MABS preferences (and accept that you lose edge-to-edge across the app).
+- **iOS**: documented no-op. iOS has no API to color the status bar background independently of the app's content. The cross-platform pattern is to paint your app header/footer in the desired color and let it extend behind the system bars via safe-area insets.
 
 ## Style semantics
 
@@ -208,6 +228,7 @@ All four preferences are optional and independent — drop any you don't need. T
 - Edge-to-edge and bar colors are **not** forced by this plugin. They are controlled by the MABS 12 preferences described in [Declarative configuration](#declarative-configuration-mabs-12-preferences); on Android 15 (API 35+) the platform itself enforces edge-to-edge regardless of `AndroidEdgeToEdge`.
 - Style changes use `WindowInsetsControllerCompat.isAppearanceLight*Bars`.
 - Visibility uses `WindowInsetsControllerCompat.show()` / `hide()` with `WindowInsetsCompat.Type.statusBars()`, `navigationBars()`, or `systemBars()` as appropriate.
+- `setStyle({ bar: 'NavigationBar' })` only has a *visible* effect in **3-button navigation mode**, where the back/home/recents icons clearly switch between dark and light. In **gesture navigation mode**, only a thin gesture handle is drawn, and recent Android versions auto-adapt its luminance to the underlying content — the appearance flag is set but the change is barely perceptible. This is platform behavior, not a plugin bug.
 
 ### iOS
 
