@@ -17,8 +17,8 @@ Initial public release.
   - `hide({ bar?, animation? })` — per-call `animation` override (iOS only).
 - Plugin exposed on `cordova.plugins.SystemBars` (primary) and `window.CustomSystemBars` (backwards-compatible alias).
 - Android: edge-to-edge–aware style and visibility control via `WindowInsetsControllerCompat`. Hiding a bar uses `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE`. `DEFAULT` style derives icon appearance from the device's `uiMode` night flag.
-- iOS: status-bar style, hidden state, and animation driven by `preferredStatusBarStyle` / `prefersStatusBarHidden` / `preferredStatusBarUpdateAnimation` overrides on `CDVViewController`. `UIViewControllerBasedStatusBarAppearance = true` is baked into the consuming app's `Info.plist` automatically.
-- `packages/outsystems-wrapper/` — a TypeScript dispatcher that resolves to either `cordova.plugins.SystemBars` (O11 / MABS) or `Capacitor.Plugins.SystemBars` (ODC) at runtime, mirroring the consumption pattern of OutSystems' own `cordova-outsystems-file` and `cordova-outsystems-geolocation` plugins. Prebuilt UMD / ESM / CJS bundles are committed under `dist/` so consumers do not need a Node toolchain.
+- iOS: status-bar style, hidden state, and animation driven by `preferredStatusBarStyle` / `prefersStatusBarHidden` / `preferredStatusBarUpdateAnimation` overrides on **both** `CDVViewController` (for O11 / MABS Cordova builds) and `CAPBridgeViewController` (for ODC builds via Capacitor's Cordova-compat layer; guarded by `#if canImport(Capacitor)`). `UIViewControllerBasedStatusBarAppearance = true` is baked into the consuming app's `Info.plist` automatically.
+- `packages/outsystems-wrapper/` — an optional TypeScript dispatcher that resolves to either `cordova.plugins.SystemBars` (O11 / MABS) or `Capacitor.Plugins.SystemBars` (ODC) at runtime. Prebuilt UMD / ESM / CJS bundles are committed under `dist/` so consumers do not need a Node toolchain.
 - README recipes for both single-runtime (Cordova-only) and dual-runtime (Cordova + Capacitor) Extensibility Configurations, including a 3-line runtime-detection helper for cross-runtime Client Actions.
 
 ### Notes

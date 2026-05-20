@@ -128,13 +128,18 @@ public class CDVSystemBarsPlugin: CDVPlugin {
 
     private static func animationDuration() -> TimeInterval {
         switch currentAnimation {
-        case .none:         return 0
-        case .slide, .fade: return 0.25
-        @unknown default:   return 0.25
+        case .none: return 0
+        default:    return 0.25
         }
     }
 }
 
+// MARK: - Status-bar overrides
+
+// On a Cordova build the app's root view controller is a `CDVViewController`,
+// so the extension below is what the UIKit lookup hits for
+// `preferredStatusBarStyle` / `prefersStatusBarHidden` /
+// `preferredStatusBarUpdateAnimation`.
 extension CDVViewController {
     open override var preferredStatusBarStyle: UIStatusBarStyle {
         return CDVSystemBarsPlugin.currentStyle
@@ -148,3 +153,28 @@ extension CDVViewController {
         return CDVSystemBarsPlugin.currentAnimation
     }
 }
+
+// On an ODC build the root view controller is `CAPBridgeViewController`
+// (which does NOT inherit from `CDVViewController`), so the same overrides
+// have to be installed on it for the status-bar changes to actually take
+// effect when this plugin is installed via Capacitor's Cordova compat
+// layer. The `canImport(Capacitor)` guard means this block only compiles
+// when the Capacitor framework is present in the build, which is exactly
+// the case where the Cordova build is *not* what's running.
+#if canImport(Capacitor)
+import Capacitor
+
+extension CAPBridgeViewController {
+    open override var preferredStatusBarStyle: UIStatusBarStyle {
+        return CDVSystemBarsPlugin.currentStyle
+    }
+
+    open override var prefersStatusBarHidden: Bool {
+        return CDVSystemBarsPlugin.isHidden
+    }
+
+    open override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
+        return CDVSystemBarsPlugin.currentAnimation
+    }
+}
+#endif
