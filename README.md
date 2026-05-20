@@ -5,7 +5,6 @@
 [![Android](https://img.shields.io/badge/Android-min%20API%2024-3DDC84?style=flat-square&logo=android&logoColor=white)](#requirements)
 [![iOS](https://img.shields.io/badge/iOS-13%2B-000000?style=flat-square&logo=apple&logoColor=white)](#requirements)
 [![OutSystems 11](https://img.shields.io/badge/OutSystems%2011-MABS%2012%2B-D52A2D?style=flat-square&logo=outsystems&logoColor=white)](#requirements)
-[![ODC](https://img.shields.io/badge/ODC-ready-A41B23?style=flat-square&logo=outsystems&logoColor=white)](#cross-runtime-usage-o11-cordova--odc-capacitor)
 
 A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. The plugin exposes the same JavaScript surface as the Capacitor 8 bundled [`SystemBars`](https://capacitorjs.com/docs/apis/system-bars) plugin, reimplemented natively in **Kotlin** (Android) and **Swift** (iOS). There is no Capacitor dependency.
 
@@ -16,7 +15,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
 - [Requirements](#requirements)
 - [Installation](#installation)
   - [OutSystems 11 (Extensibility Configurations)](#outsystems-11-extensibility-configurations)
-    - [Cross-runtime install (O11 Cordova + ODC Capacitor)](#cross-runtime-install-o11-cordova--odc-capacitor)
+    - [Cross-runtime usage (O11 Cordova + ODC Capacitor)](#cross-runtime-usage-o11-cordova--odc-capacitor)
   - [Cordova CLI](#cordova-cli)
   - [Cross-runtime wrapper (`OSSystemBarsWrapper`)](#cross-runtime-wrapper-ossystembarswrapper)
 - [Usage](#usage)
@@ -40,7 +39,7 @@ MABS 12 / `cordova-android` 14 already cover the **declarative** side of system-
 
 ## Features
 
-- **Strict API parity** with Capacitor 8's `SystemBars`: exactly the same four methods (`setStyle`, `setAnimation`, `show`, `hide`) with the same argument shapes and the same semantics. Client Actions written against this plugin can be moved to an ODC / Capacitor app unchanged.
+- **Strict API parity** with Capacitor 8's `SystemBars`: exactly the same four methods (`setStyle`, `setAnimation`, `show`, `hide`) with the same argument shapes and the same semantics. Combined with the bundled [`OSSystemBarsWrapper`](packages/outsystems-wrapper/README.md), a single Client Action can run unchanged on both O11 (Cordova) and ODC (Capacitor).
 - Promise-based JavaScript API.
 - Runtime style toggling per bar (`StatusBar` / `NavigationBar`) on Android.
 - Runtime visibility control with `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE` on Android so the user can still swipe to reveal hidden bars.
