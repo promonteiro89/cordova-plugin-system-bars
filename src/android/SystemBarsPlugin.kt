@@ -1,4 +1,4 @@
-package io.github.promonteiro89.systembars
+package com.outsystemscloud.systembars
 
 import android.content.res.Configuration
 import androidx.core.view.WindowCompat
