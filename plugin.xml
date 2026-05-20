@@ -36,14 +36,21 @@
 
     <!-- iOS -->
     <platform name="ios">
-        <preference name="deployment-target" value="13.0" />
-        <preference name="SwiftVersion" value="5" />
-
+        <!-- deployment-target and SwiftVersion must be injected into the
+             consuming app's config.xml as <preference> entries, not declared
+             as bare <preference> elements under <platform>. The bare form
+             makes plugman treat them as required install-time variables and
+             aborts the install with "Variable(s) missing: DEPLOYMENT-TARGET,
+             SWIFTVERSION" (same trap we hit on Android with the Kotlin
+             Gradle preferences). Pattern matches OutSystems' own iOS Cordova
+             plugins (e.g. cordova-outsystems-barcode). -->
         <config-file target="config.xml" parent="/*">
             <feature name="CustomSystemBars">
                 <param name="ios-package" value="CDVSystemBarsPlugin" />
                 <param name="onload" value="true" />
             </feature>
+            <preference name="deployment-target" value="13.0" />
+            <preference name="SwiftVersion" value="5" />
         </config-file>
 
         <config-file target="*-Info.plist" parent="UIViewControllerBasedStatusBarAppearance">
