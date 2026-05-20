@@ -2,10 +2,10 @@
 
 [![Version](https://img.shields.io/github/v/tag/promonteiro89/cordova-plugin-system-bars?style=flat-square&label=version&color=2188FF)](https://github.com/promonteiro89/cordova-plugin-system-bars/releases/latest)
 [![License](https://img.shields.io/badge/license-MIT-2EA043?style=flat-square)](LICENSE)
-[![Capacitor API](https://img.shields.io/badge/Capacitor%20API-8.0-119EFF?style=flat-square&logo=capacitor&logoColor=white)](https://capacitorjs.com/docs/apis/system-bars)
 [![Android](https://img.shields.io/badge/Android-min%20API%2024-3DDC84?style=flat-square&logo=android&logoColor=white)](#requirements)
 [![iOS](https://img.shields.io/badge/iOS-13%2B-000000?style=flat-square&logo=apple&logoColor=white)](#requirements)
-[![MABS](https://img.shields.io/badge/MABS-12%2B-D52A2D?style=flat-square&logo=outsystems&logoColor=white)](#requirements)
+[![OutSystems 11](https://img.shields.io/badge/OutSystems%2011-MABS%2012%2B-D52A2D?style=flat-square&logo=outsystems&logoColor=white)](#requirements)
+[![ODC](https://img.shields.io/badge/ODC-ready-A41B23?style=flat-square&logo=outsystems&logoColor=white)](#cross-runtime-usage-o11-cordova--odc-capacitor)
 
 A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. The plugin exposes the same JavaScript surface as the Capacitor 8 bundled [`SystemBars`](https://capacitorjs.com/docs/apis/system-bars) plugin, reimplemented natively in **Kotlin** (Android) and **Swift** (iOS). There is no Capacitor dependency.
 
