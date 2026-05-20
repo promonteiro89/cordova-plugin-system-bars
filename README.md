@@ -84,29 +84,29 @@ cordova plugin add https://github.com/promonteiro89/cordova-plugin-system-bars.g
 
 ```javascript
 // Dark icons on a light background, both bars
-window.CustomSystemBars.setStyle({ style: 'LIGHT' });
+cordova.plugins.SystemBars.setStyle({ style: 'LIGHT' });
 
 // Light icons on a dark background, status bar only
-window.CustomSystemBars.setStyle({ style: 'DARK', bar: 'StatusBar' });
+cordova.plugins.SystemBars.setStyle({ style: 'DARK', bar: 'StatusBar' });
 
 // Follow the device's system theme
-window.CustomSystemBars.setStyle({ style: 'DEFAULT' });
+cordova.plugins.SystemBars.setStyle({ style: 'DEFAULT' });
 
 // Hide the status bar (Android: swipe to reveal)
-window.CustomSystemBars.hide({ bar: 'StatusBar' });
+cordova.plugins.SystemBars.hide({ bar: 'StatusBar' });
 
 // Show everything again
-window.CustomSystemBars.show();
+cordova.plugins.SystemBars.show();
 
 // Animate subsequent status-bar visibility changes on iOS
-window.CustomSystemBars.setAnimation({ animation: 'SLIDE' });
+cordova.plugins.SystemBars.setAnimation({ animation: 'SLIDE' });
 ```
 
 All methods return a `Promise<void>` that rejects with a string error message on failure.
 
 ## API reference
 
-All methods are exposed on `window.CustomSystemBars`.
+All methods are exposed on **`cordova.plugins.SystemBars`** (the canonical Cordova access path). For backwards compatibility, the same object is also assigned to **`window.CustomSystemBars`** — existing Client Actions that use the legacy global continue to work, but new code should prefer `cordova.plugins.SystemBars`.
 
 ### `setStyle(options)`
 
@@ -239,7 +239,7 @@ Make sure your viewport meta tag includes `viewport-fit=cover`, otherwise iOS re
 
 ## Differences from Capacitor's SystemBars
 
-- The global is `window.CustomSystemBars`, not `Capacitor.Plugins.SystemBars`.
+- The plugin object lives at `cordova.plugins.SystemBars` (with `window.CustomSystemBars` as a deprecated alias), not at `Capacitor.Plugins.SystemBars`. Cross-runtime code: `const SystemBars = window.Capacitor?.Plugins?.SystemBars ?? cordova.plugins.SystemBars;`
 - Capacitor's [legacy Status Bar plugin](https://capacitorjs.com/docs/apis/status-bar) (`setBackgroundColor`, `setOverlaysWebView`) is **not** ported — those methods are intentionally not part of Capacitor's `SystemBars` API and are out of scope here too.
 - On Android, `setAnimation` is recorded for API parity but does not change the platform's system-bar animation.
 
