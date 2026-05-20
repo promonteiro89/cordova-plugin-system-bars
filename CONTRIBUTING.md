@@ -30,7 +30,8 @@ When filing a bug, please include:
    - Each method you touched works on both Android (test on API 24, API 30, and API 35+ if you can) and iOS (iOS 13 and the latest).
    - Edge-to-edge rendering is not broken — the app content should still draw behind the system bars.
 4. Update the README if the public API or behavior changes.
-5. Bump the version in `plugin.xml` and `package.json` following [SemVer](https://semver.org/) if your change is user-visible.
+5. Bump the version following [SemVer](https://semver.org/) if your change is user-visible. The version appears in three places that must stay in sync: `plugin.xml`, `package.json`, and `packages/outsystems-wrapper/package.json`.
+6. If you touched `packages/outsystems-wrapper/src/`, run `npm install && npm run build` in that directory and commit the regenerated `dist/`.
 
 ## Pull request checklist
 
@@ -43,9 +44,10 @@ When filing a bug, please include:
 
 ## Style
 
-- Kotlin: idiomatic Kotlin, no Java interop hacks unless required by the Cordova plugin contract.
-- Swift: Swift 5, iOS 13+ APIs only.
-- JavaScript: no transpilation, no dependencies. Plain ES5 (`var`, `function`) so the file loads in WebViews without a build step.
+- **Kotlin** (`src/android/`): idiomatic Kotlin, no Java interop hacks unless required by the Cordova plugin contract.
+- **Swift** (`src/ios/`): Swift 5, iOS 13+ APIs only.
+- **JavaScript** (`www/systembars.js`): no transpilation, no dependencies. Plain ES5 (`var`, `function`) so the file loads in Cordova WebViews without a build step.
+- **TypeScript** (`packages/outsystems-wrapper/src/`): strict TypeScript, ES2017 target. Build with `npm run build` and **commit the resulting `packages/outsystems-wrapper/dist/`** so consumers don't need a build step.
 
 ## License
 
