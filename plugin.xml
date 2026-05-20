@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         id="com.outsystemscloud.systembars"
-        version="1.0.0">
+        version="1.0.1">
 
     <name>SystemBars</name>
     <description>Cordova port of Capacitor 8's SystemBars JavaScript API for OutSystems 11 / MABS 12. Implemented natively in Kotlin (Android) and Swift (iOS).</description>
