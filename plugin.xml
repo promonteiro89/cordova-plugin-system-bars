@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <plugin xmlns="http://apache.org/cordova/ns/plugins/1.0"
         id="com.outsystemscloud.systembars"
-        version="1.0.1">
+        version="1.0.2">
 
     <name>SystemBars</name>
     <description>Cordova port of Capacitor 8's SystemBars JavaScript API for OutSystems 11 / MABS 12. Implemented natively in Kotlin (Android) and Swift (iOS).</description>
@@ -26,6 +26,8 @@
 
         <source-file src="src/android/SystemBarsPlugin.kt"
                      target-dir="app/src/main/kotlin/com/outsystemscloud/systembars" />
+        <source-file src="src/android/OSSystemBarsErrors.kt"
+                     target-dir="app/src/main/kotlin/com/outsystemscloud/systembars" />
     </platform>
 
     <platform name="ios">
@@ -43,6 +45,7 @@
         </config-file>
 
         <source-file src="src/ios/CDVSystemBarsPlugin.swift" />
+        <source-file src="src/ios/OSSystemBarsError.swift" />
     </platform>
 
 </plugin>
