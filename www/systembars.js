@@ -2,7 +2,7 @@ var exec = require('cordova/exec');
 
 function call(action, options) {
     return new Promise(function (resolve, reject) {
-        exec(resolve, reject, 'CustomSystemBars', action, [options || {}]);
+        exec(resolve, reject, 'OSSystemBars', action, [options || {}]);
     });
 }
 

@@ -14,7 +14,7 @@
 
     <platform name="android">
         <config-file target="res/xml/config.xml" parent="/*">
-            <feature name="CustomSystemBars">
+            <feature name="OSSystemBars">
                 <param name="android-package" value="com.outsystemscloud.systembars.SystemBarsPlugin" />
                 <param name="onload" value="true" />
             </feature>
@@ -32,7 +32,7 @@
 
     <platform name="ios">
         <config-file target="config.xml" parent="/*">
-            <feature name="CustomSystemBars">
+            <feature name="OSSystemBars">
                 <param name="ios-package" value="CDVSystemBarsPlugin" />
                 <param name="onload" value="true" />
             </feature>
