@@ -74,9 +74,9 @@ Paste this into the **Extensibility Configurations** property of your OutSystems
 
 Pin the tag (`#1.0.0`) so MABS does not silently pull breaking changes.
 
-#### Cross-runtime install (O11 Cordova + ODC Capacitor)
+#### Cross-runtime usage (O11 Cordova + ODC Capacitor)
 
-If the same OutSystems module is built for both **O11 / MABS (Cordova)** and **ODC (Capacitor)**, use the unified manifest below. The OutSystems platform reads the matching `buildConfigurations.<target>` block per build target and installs the appropriate plugin — this Cordova plugin on O11, and [`@capacitor/system-bars`](https://capacitorjs.com/docs/apis/system-bars) on ODC.
+Capacitor 8's `SystemBars` is **bundled with [`@capacitor/core`](https://capacitorjs.com/docs/apis/system-bars)** — every Capacitor app already has it, no separate install. So a single Extensibility Configurations entry only needs to install **this Cordova plugin** for the O11 build:
 
 ```json
 {
@@ -88,11 +88,6 @@ If the same OutSystems module is built for both **O11 / MABS (Cordova)** and **O
       "source": {
         "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
       }
-    },
-    "capacitor": {
-      "source": {
-        "npm": "@capacitor/system-bars@8.0.0"
-      }
     }
   },
   "metadata": {
@@ -103,7 +98,7 @@ If the same OutSystems module is built for both **O11 / MABS (Cordova)** and **O
 }
 ```
 
-This solves install-time portability. The **runtime** API surface is also nearly identical (Capacitor's `SystemBars` was the spec we mirrored), but the *access path* differs between runtimes — on O11 the plugin lives at `cordova.plugins.SystemBars`, on ODC at `Capacitor.Plugins.SystemBars`. Resolve it once at the top of your Client Action helper:
+The **runtime** API surface is identical because we mirrored Capacitor's contract, but the *access path* differs between runtimes — on O11 the plugin lives at `cordova.plugins.SystemBars`, on ODC at `Capacitor.Plugins.SystemBars`. Resolve it once at the top of your Client Action helper:
 
 ```javascript
 const SystemBars =
@@ -113,7 +108,7 @@ const SystemBars =
 SystemBars.setStyle({ style: 'DARK' });
 ```
 
-With the dual-install manifest above plus that one-liner, the same Client Action runs unchanged on O11 and ODC.
+Or skip the ternary and use [the bundled wrapper](#cross-runtime-wrapper-ossystembarswrapper) below.
 
 ### Cordova CLI
 
@@ -153,7 +148,7 @@ cordova.plugins.SystemBars.hide({ bar: 'StatusBar' });
 cordova.plugins.SystemBars.show();
 
 // Animate subsequent status-bar visibility changes on iOS
-cordova.plugins.SystemBars.setAnimation({ animation: 'SLIDE' });
+cordova.plugins.SystemBars.setAnimation({ animation: 'FADE' });
 ```
 
 All methods return a `Promise<void>` that rejects with a string error message on failure.
@@ -177,7 +172,7 @@ Sets the transition used when the status bar appearance changes.
 
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
-| `options.animation` | `'NONE' \| 'SLIDE' \| 'FADE'` | yes | iOS maps to `UIStatusBarAnimation` and uses it for the next `show`/`hide`/`setStyle` transition. Android validates the value to match Capacitor's input contract; the platform composes its own system-bar animation. |
+| `options.animation` | `'NONE' \| 'FADE'` | yes | iOS maps to `UIStatusBarAnimation` and uses it for the next `show`/`hide`/`setStyle` transition. Android validates the value to match Capacitor's input contract; the platform composes its own system-bar animation. |
 
 ### `show(options?)`
 
@@ -186,6 +181,7 @@ Shows the system bars (or just one).
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `options.bar` | `'StatusBar' \| 'NavigationBar'` | no | Restrict to a single bar. Omit to show all. iOS treats `NavigationBar` as a no-op. |
+| `options.animation` | `'NONE' \| 'FADE'` | no | Per-call animation override (iOS only). Applies to this transition only — the value set by `setAnimation` is preserved for subsequent calls. |
 
 ### `hide(options?)`
 
@@ -194,6 +190,7 @@ Hides the system bars (or just one). On Android the controller is set to `BEHAVI
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `options.bar` | `'StatusBar' \| 'NavigationBar'` | no | Restrict to a single bar. Omit to hide all. iOS treats `NavigationBar` as a no-op. |
+| `options.animation` | `'NONE' \| 'FADE'` | no | Per-call animation override (iOS only). Applies to this transition only — the value set by `setAnimation` is preserved for subsequent calls. |
 
 ## Style semantics
 

@@ -22,7 +22,7 @@ OSSystemBarsWrapper.Instance.setStyle({ style: 'DARK' });
 OSSystemBarsWrapper.Instance.setStyle({ style: 'LIGHT', bar: 'StatusBar' });
 OSSystemBarsWrapper.Instance.show();
 OSSystemBarsWrapper.Instance.hide({ bar: 'StatusBar' });
-OSSystemBarsWrapper.Instance.setAnimation({ animation: 'SLIDE' });
+OSSystemBarsWrapper.Instance.setAnimation({ animation: 'FADE' });
 ```
 
 The same call works on both O11 (Cordova) and ODC (Capacitor) builds — the wrapper detects the host runtime once and forwards subsequent calls without overhead.
@@ -34,7 +34,7 @@ The wrapper exposes the **exact** four methods of Capacitor 8's [`SystemBars`](h
 | Method | Arguments | Returns |
 |---|---|---|
 | `setStyle(options)` | `{ style: 'DARK' \| 'LIGHT' \| 'DEFAULT', bar?: 'StatusBar' \| 'NavigationBar' }` | `Promise<void>` |
-| `setAnimation(options)` | `{ animation: 'NONE' \| 'SLIDE' \| 'FADE' }` | `Promise<void>` |
+| `setAnimation(options)` | `{ animation: 'NONE' \| 'FADE' }` | `Promise<void>` |
 | `show(options?)` | `{ bar?: 'StatusBar' \| 'NavigationBar' }` | `Promise<void>` |
 | `hide(options?)` | `{ bar?: 'StatusBar' \| 'NavigationBar' }` | `Promise<void>` |
 

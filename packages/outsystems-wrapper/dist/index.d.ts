@@ -15,7 +15,7 @@
  */
 export type SystemBarsStyle = 'DARK' | 'LIGHT' | 'DEFAULT';
 export type SystemBar = 'StatusBar' | 'NavigationBar';
-export type SystemBarsAnimation = 'NONE' | 'SLIDE' | 'FADE';
+export type SystemBarsAnimation = 'NONE' | 'FADE';
 export interface SetStyleOptions {
     style: SystemBarsStyle;
     bar?: SystemBar;
@@ -25,6 +25,8 @@ export interface SetAnimationOptions {
 }
 export interface ShowOrHideOptions {
     bar?: SystemBar;
+    /** Per-call animation override (iOS only). */
+    animation?: SystemBarsAnimation;
 }
 /** Common shape implemented by both Cordova and Capacitor SystemBars plugins. */
 export interface SystemBarsPlugin {

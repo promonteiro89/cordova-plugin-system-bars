@@ -12,7 +12,7 @@ import org.json.JSONObject
 class SystemBarsPlugin : CordovaPlugin() {
 
     companion object {
-        private val VALID_ANIMATIONS = setOf("NONE", "SLIDE", "FADE")
+        private val VALID_ANIMATIONS = setOf("NONE", "FADE")
     }
 
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
@@ -70,6 +70,15 @@ class SystemBarsPlugin : CordovaPlugin() {
         val controller = insetsController()
         if (controller == null) {
             callback.error("WindowInsetsController unavailable")
+            return
+        }
+
+        // Validate the optional per-call 'animation' for API parity with
+        // Capacitor's SystemBarsVisibilityOptions. The platform animates the
+        // transition itself on Android, so the value is accepted but unused.
+        val animation = opts?.optString("animation", null)
+        if (animation != null && animation !in VALID_ANIMATIONS) {
+            callback.error("Invalid animation: $animation")
             return
         }
 

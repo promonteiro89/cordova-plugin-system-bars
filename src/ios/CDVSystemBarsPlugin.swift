@@ -10,9 +10,8 @@ public class CDVSystemBarsPlugin: CDVPlugin {
     fileprivate static var currentAnimation: UIStatusBarAnimation = .fade
 
     private static let validAnimations: [String: UIStatusBarAnimation] = [
-        "NONE":  .none,
-        "SLIDE": .slide,
-        "FADE":  .fade
+        "NONE": .none,
+        "FADE": .fade
     ]
 
     public override func pluginInitialize() {
@@ -65,21 +64,50 @@ public class CDVSystemBarsPlugin: CDVPlugin {
 
     /// iOS has no separately controllable navigation bar — `bar: "NavigationBar"`
     /// resolves successfully but does not change visibility.
+    ///
+    /// Supports a per-call `animation` override (Capacitor's
+    /// `SystemBarsVisibilityOptions.animation`). The override applies to this
+    /// transition only — the value set by `setAnimation` is preserved for
+    /// subsequent transitions.
     private func setVisibility(hidden: Bool, for command: CDVInvokedUrlCommand) {
         let opts = command.argument(at: 0) as? [String: Any] ?? [:]
         if (opts["bar"] as? String) == "NavigationBar" {
             sendOK(command)
             return
         }
+
+        if let raw = opts["animation"] as? String {
+            guard CDVSystemBarsPlugin.validAnimations[raw] != nil else {
+                sendError(command, "Invalid animation: \(raw)")
+                return
+            }
+        }
+        let overrideAnimation = (opts["animation"] as? String).flatMap { CDVSystemBarsPlugin.validAnimations[$0] }
+
         CDVSystemBarsPlugin.isHidden = hidden
-        applyAppearanceUpdate(for: command)
+        applyAppearanceUpdate(for: command, animationOverride: overrideAnimation)
     }
 
-    private func applyAppearanceUpdate(for command: CDVInvokedUrlCommand) {
+    private func applyAppearanceUpdate(
+        for command: CDVInvokedUrlCommand,
+        animationOverride: UIStatusBarAnimation? = nil
+    ) {
+        let savedAnimation = CDVSystemBarsPlugin.currentAnimation
+        if let override = animationOverride {
+            CDVSystemBarsPlugin.currentAnimation = override
+        }
         DispatchQueue.main.async {
-            UIView.animate(withDuration: CDVSystemBarsPlugin.animationDuration()) {
-                self.viewController?.setNeedsStatusBarAppearanceUpdate()
-            }
+            UIView.animate(
+                withDuration: CDVSystemBarsPlugin.animationDuration(),
+                animations: {
+                    self.viewController?.setNeedsStatusBarAppearanceUpdate()
+                },
+                completion: { _ in
+                    if animationOverride != nil {
+                        CDVSystemBarsPlugin.currentAnimation = savedAnimation
+                    }
+                }
+            )
             self.sendOK(command)
         }
     }
