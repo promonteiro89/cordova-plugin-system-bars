@@ -21,7 +21,6 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [`show(options?)`](#showoptions)
   - [`hide(options?)`](#hideoptions)
   - [`setAnimation(options)`](#setanimationoptions)
-  - [`setColor(options)`](#setcoloroptions)
 - [Style semantics](#style-semantics)
 - [Declarative configuration (MABS 12 preferences)](#declarative-configuration-mabs-12-preferences)
   - [Where to set the preferences](#where-to-set-the-preferences)
@@ -37,9 +36,10 @@ MABS 12 / `cordova-android` 14 already cover the **declarative** side of system-
 
 ## Features
 
-- Runtime style toggling per bar (`StatusBar` / `NavigationBar`) from JavaScript.
+- **Strict API parity** with Capacitor 8's `SystemBars`: exactly the same four methods (`setStyle`, `setAnimation`, `show`, `hide`) with the same argument shapes and the same semantics. Client Actions written against this plugin can be moved to an ODC / Capacitor app unchanged.
+- Promise-based JavaScript API.
+- Runtime style toggling per bar (`StatusBar` / `NavigationBar`) on Android.
 - Runtime visibility control with `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE` on Android so the user can still swipe to reveal hidden bars.
-- Promise-based JavaScript API, identical to Capacitor's.
 - Configurable show/hide animation on iOS (`NONE` / `SLIDE` / `FADE`).
 - Bakes `UIViewControllerBasedStatusBarAppearance = true` into the iOS `Info.plist` automatically.
 - Does not fight MABS 12 platform preferences — declarative startup configuration is left entirely to the platform.
@@ -100,9 +100,6 @@ window.CustomSystemBars.show();
 
 // Animate subsequent status-bar visibility changes on iOS
 window.CustomSystemBars.setAnimation({ animation: 'SLIDE' });
-
-// Tint both bars black (Android only)
-window.CustomSystemBars.setColor({ color: '#000000' });
 ```
 
 All methods return a `Promise<void>` that rejects with a string error message on failure.
@@ -143,22 +140,6 @@ Sets the transition used when the status bar appearance changes.
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `options.animation` | `'NONE' \| 'SLIDE' \| 'FADE'` | yes | iOS maps to `UIStatusBarAnimation`. Android records the value for API parity but the platform composes its own animation. |
-
-### `setColor(options)`
-
-> Plugin extension — **not** part of Capacitor's `SystemBars` API. Provided for parity with the legacy `cordova-plugin-statusbar` ergonomics so the runtime can tint the bars.
-
-Sets the background color of the status bar, the navigation bar, or both. Android-only effective behavior.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `options.color` | `'#RRGGBB'` or `'#AARRGGBB'` | yes | Hex color string parseable by Android's `Color.parseColor`. |
-| `options.bar` | `'StatusBar' \| 'NavigationBar'` | no | Restrict to a single bar. Omit to apply to both. |
-
-Important caveats:
-
-- **Android 15+ (API 35+)**: `window.statusBarColor` and `window.navigationBarColor` are platform-level no-ops because edge-to-edge is enforced. The call still resolves successfully so cross-platform code doesn't need to branch on OS version. If you need a colored bar on Android 15, disable edge-to-edge declaratively with `AndroidEdgeToEdge=false` in MABS preferences (and accept that you lose edge-to-edge across the app).
-- **iOS**: documented no-op. iOS has no API to color the status bar background independently of the app's content. The cross-platform pattern is to paint your app header/footer in the desired color and let it extend behind the system bars via safe-area insets.
 
 ## Style semantics
 

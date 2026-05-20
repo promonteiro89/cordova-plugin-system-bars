@@ -10,6 +10,5 @@ module.exports = {
     setStyle:     function (options) { return call("setStyle", options); },
     show:         function (options) { return call("show", options); },
     hide:         function (options) { return call("hide", options); },
-    setAnimation: function (options) { return call("setAnimation", options); },
-    setColor:     function (options) { return call("setColor", options); }
+    setAnimation: function (options) { return call("setAnimation", options); }
 };
