@@ -3,27 +3,17 @@
         id="com.outsystemscloud.systembars"
         version="1.0.0">
 
-    <name>CustomSystemBars</name>
-    <description>Cordova port of Capacitor's SystemBars API for OutSystems 11 / MABS 12. Provides edge-to-edge status bar and navigation bar control on Android and iOS.</description>
+    <name>SystemBars</name>
+    <description>Cordova port of Capacitor 8's SystemBars JavaScript API for OutSystems 11 / MABS 12. Implemented natively in Kotlin (Android) and Swift (iOS).</description>
     <license>MIT</license>
-    <keywords>cordova,outsystems,system-bars,status-bar,navigation-bar,edge-to-edge</keywords>
+    <keywords>cordova,outsystems,system-bars,status-bar,navigation-bar</keywords>
 
     <js-module src="www/systembars.js" name="SystemBars">
-        <!-- Primary access path: cordova.plugins.SystemBars (standard Cordova
-             convention, e.g. cordova.plugins.OSBarcode in OutSystems' barcode
-             plugin). window.CustomSystemBars is retained as a deprecated
-             alias for backwards compatibility with existing Client Actions. -->
         <clobbers target="cordova.plugins.SystemBars" />
         <clobbers target="window.CustomSystemBars" />
     </js-module>
 
-    <!-- Android -->
     <platform name="android">
-        <!-- Kotlin support: the Gradle preferences must be set inside the
-             Android platform's config.xml (res/xml/config.xml), not the root
-             config.xml, and the .kt source must land in the explicit Kotlin
-             source set (app/src/main/kotlin/...). Pattern matches OutSystems'
-             own Kotlin Cordova plugins (e.g. cordova-outsystems-barcode). -->
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="CustomSystemBars">
                 <param name="android-package" value="com.outsystemscloud.systembars.SystemBarsPlugin" />
@@ -39,16 +29,7 @@
                      target-dir="app/src/main/kotlin/com/outsystemscloud/systembars" />
     </platform>
 
-    <!-- iOS -->
     <platform name="ios">
-        <!-- deployment-target and SwiftVersion must be injected into the
-             consuming app's config.xml as <preference> entries, not declared
-             as bare <preference> elements under <platform>. The bare form
-             makes plugman treat them as required install-time variables and
-             aborts the install with "Variable(s) missing: DEPLOYMENT-TARGET,
-             SWIFTVERSION" (same trap we hit on Android with the Kotlin
-             Gradle preferences). Pattern matches OutSystems' own iOS Cordova
-             plugins (e.g. cordova-outsystems-barcode). -->
         <config-file target="config.xml" parent="/*">
             <feature name="CustomSystemBars">
                 <param name="ios-package" value="CDVSystemBarsPlugin" />

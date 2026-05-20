@@ -11,21 +11,17 @@ import org.json.JSONObject
 
 class SystemBarsPlugin : CordovaPlugin() {
 
-    // Persisted for parity with Capacitor's API. Android composes its own
-    // system-bar animations via WindowInsetsController; this value is recorded
-    // but not used to override the platform animation.
-    private var currentAnimation: String = "FADE"
+    companion object {
+        private val VALID_ANIMATIONS = setOf("NONE", "SLIDE", "FADE")
+    }
 
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
         when (action) {
-            "setStyle" -> runOnUi(callback) { applyStyle(args.optJSONObject(0), callback) }
-            "show" -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), true, callback) }
-            "hide" -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), false, callback) }
-            "setAnimation" -> runOnUi(callback) { applyAnimation(args.optJSONObject(0), callback) }
-            else -> {
-                callback.error("Unknown action: $action")
-                return true
-            }
+            "setStyle"     -> runOnUi(callback) { applyStyle(args.optJSONObject(0), callback) }
+            "show"         -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), show = true,  callback) }
+            "hide"         -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), show = false, callback) }
+            "setAnimation" -> applyAnimation(args.optJSONObject(0), callback)
+            else -> return false   // Cordova replies with INVALID_ACTION.
         }
         return true
     }
@@ -41,31 +37,28 @@ class SystemBarsPlugin : CordovaPlugin() {
     }
 
     private fun applyStyle(opts: JSONObject?, callback: CallbackContext) {
-        val window = cordova.activity.window
-        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        val controller = insetsController()
         if (controller == null) {
             callback.error("WindowInsetsController unavailable")
             return
         }
 
         val style = opts?.optString("style", "DEFAULT") ?: "DEFAULT"
-        val bar = opts?.optString("bar", null)
+        val bar   = opts?.optString("bar", null)
 
+        // Note: 'DARK' / 'LIGHT' describe the background, not the icons —
+        // this matches Capacitor's enum semantics. 'LIGHT' background → dark icons.
         val appearanceLight: Boolean = when (style) {
-            "LIGHT" -> true                  // Light background → dark icons
-            "DARK" -> false                  // Dark background → light icons
-            else -> {                        // DEFAULT — follow system theme
-                val night = cordova.activity.resources.configuration.uiMode and
-                        Configuration.UI_MODE_NIGHT_MASK
-                night != Configuration.UI_MODE_NIGHT_YES
-            }
+            "LIGHT" -> true
+            "DARK"  -> false
+            else    -> !isNightMode()
         }
 
         when (bar) {
-            "StatusBar" -> controller.isAppearanceLightStatusBars = appearanceLight
+            "StatusBar"     -> controller.isAppearanceLightStatusBars     = appearanceLight
             "NavigationBar" -> controller.isAppearanceLightNavigationBars = appearanceLight
             else -> {
-                controller.isAppearanceLightStatusBars = appearanceLight
+                controller.isAppearanceLightStatusBars     = appearanceLight
                 controller.isAppearanceLightNavigationBars = appearanceLight
             }
         }
@@ -74,18 +67,16 @@ class SystemBarsPlugin : CordovaPlugin() {
     }
 
     private fun applyVisibility(opts: JSONObject?, show: Boolean, callback: CallbackContext) {
-        val window = cordova.activity.window
-        val controller = WindowCompat.getInsetsController(window, window.decorView)
+        val controller = insetsController()
         if (controller == null) {
             callback.error("WindowInsetsController unavailable")
             return
         }
 
-        val bar = opts?.optString("bar", null)
-        val types = when (bar) {
-            "StatusBar" -> WindowInsetsCompat.Type.statusBars()
+        val types = when (opts?.optString("bar", null)) {
+            "StatusBar"     -> WindowInsetsCompat.Type.statusBars()
             "NavigationBar" -> WindowInsetsCompat.Type.navigationBars()
-            else -> WindowInsetsCompat.Type.systemBars()
+            else            -> WindowInsetsCompat.Type.systemBars()
         }
 
         if (show) {
@@ -99,13 +90,26 @@ class SystemBarsPlugin : CordovaPlugin() {
         callback.success()
     }
 
+    // Android composes its own system-bar animations via WindowInsetsController,
+    // so there is no platform hook for this on Android. We validate the value to
+    // match Capacitor's input contract and acknowledge.
     private fun applyAnimation(opts: JSONObject?, callback: CallbackContext) {
         val animation = opts?.optString("animation", "FADE") ?: "FADE"
-        if (animation !in setOf("NONE", "SLIDE", "FADE")) {
+        if (animation !in VALID_ANIMATIONS) {
             callback.error("Invalid animation: $animation")
             return
         }
-        currentAnimation = animation
         callback.success()
+    }
+
+    private fun insetsController(): WindowInsetsControllerCompat? {
+        val window = cordova.activity.window
+        return WindowCompat.getInsetsController(window, window.decorView)
+    }
+
+    private fun isNightMode(): Boolean {
+        val night = cordova.activity.resources.configuration.uiMode and
+                Configuration.UI_MODE_NIGHT_MASK
+        return night == Configuration.UI_MODE_NIGHT_YES
     }
 }

@@ -20,9 +20,9 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
 - [Usage](#usage)
 - [API reference](#api-reference)
   - [`setStyle(options)`](#setstyleoptions)
+  - [`setAnimation(options)`](#setanimationoptions)
   - [`show(options?)`](#showoptions)
   - [`hide(options?)`](#hideoptions)
-  - [`setAnimation(options)`](#setanimationoptions)
 - [Style semantics](#style-semantics)
 - [Declarative configuration (MABS 12 preferences)](#declarative-configuration-mabs-12-preferences)
   - [Where to set the preferences](#where-to-set-the-preferences)
@@ -52,7 +52,7 @@ MABS 12 / `cordova-android` 14 already cover the **declarative** side of system-
 |-----------|---------|
 | OutSystems | 11, MABS 12+ |
 | `cordova-android` | 12+ (MABS 12 ships a compatible version) |
-| `cordova-ios` | 6.2+ |
+| `cordova-ios` | 7.0+ (MABS 12 ships a compatible version) |
 | Android `compileSdkVersion` | 35 |
 | Android `minSdkVersion` | 24 |
 | iOS deployment target | 13.0 |
@@ -171,6 +171,14 @@ Sets icon/text appearance on the system bars.
 | `options.style` | `'DARK' \| 'LIGHT' \| 'DEFAULT'` | yes | See [Style semantics](#style-semantics). |
 | `options.bar` | `'StatusBar' \| 'NavigationBar'` | no | Apply to a single bar. Omit to apply to both (Android) or to the status bar (iOS). |
 
+### `setAnimation(options)`
+
+Sets the transition used when the status bar appearance changes.
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `options.animation` | `'NONE' \| 'SLIDE' \| 'FADE'` | yes | iOS maps to `UIStatusBarAnimation` and uses it for the next `show`/`hide`/`setStyle` transition. Android validates the value to match Capacitor's input contract; the platform composes its own system-bar animation. |
+
 ### `show(options?)`
 
 Shows the system bars (or just one).
@@ -186,14 +194,6 @@ Hides the system bars (or just one). On Android the controller is set to `BEHAVI
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `options.bar` | `'StatusBar' \| 'NavigationBar'` | no | Restrict to a single bar. Omit to hide all. iOS treats `NavigationBar` as a no-op. |
-
-### `setAnimation(options)`
-
-Sets the transition used when the status bar appearance changes.
-
-| Parameter | Type | Required | Description |
-|-----------|------|----------|-------------|
-| `options.animation` | `'NONE' \| 'SLIDE' \| 'FADE'` | yes | iOS maps to `UIStatusBarAnimation`. Android records the value for API parity but the platform composes its own animation. |
 
 ## Style semantics
 
@@ -259,7 +259,7 @@ All four preferences are optional and independent — drop any you don't need. T
 
 ### Android
 
-- Implemented in Kotlin. The plugin enables the Kotlin Gradle plugin via the `GradlePluginKotlinEnabled` Cordova preference and pins `GradlePluginKotlinVersion` to `1.9.24`.
+- Implemented in Kotlin. The plugin opts the consuming app into the Kotlin Gradle plugin via the `GradlePluginKotlinEnabled` / `GradlePluginKotlinCodeStyle` Cordova preferences (injected into the Android platform's `config.xml` at install time) and ships the source under `app/src/main/kotlin/...`.
 - Edge-to-edge and bar colors are **not** forced by this plugin. They are controlled by the MABS 12 preferences described in [Declarative configuration](#declarative-configuration-mabs-12-preferences); on Android 15 (API 35+) the platform itself enforces edge-to-edge regardless of `AndroidEdgeToEdge`.
 - Style changes use `WindowInsetsControllerCompat.isAppearanceLight*Bars`.
 - Visibility uses `WindowInsetsControllerCompat.show()` / `hide()` with `WindowInsetsCompat.Type.statusBars()`, `navigationBars()`, or `systemBars()` as appropriate.
@@ -295,7 +295,7 @@ Make sure your viewport meta tag includes `viewport-fit=cover`, otherwise iOS re
 
 - The plugin object lives at `cordova.plugins.SystemBars` (with `window.CustomSystemBars` as a deprecated alias), not at `Capacitor.Plugins.SystemBars`. Cross-runtime code: `const SystemBars = window.Capacitor?.Plugins?.SystemBars ?? cordova.plugins.SystemBars;`
 - Capacitor's [legacy Status Bar plugin](https://capacitorjs.com/docs/apis/status-bar) (`setBackgroundColor`, `setOverlaysWebView`) is **not** ported — those methods are intentionally not part of Capacitor's `SystemBars` API and are out of scope here too.
-- On Android, `setAnimation` is recorded for API parity but does not change the platform's system-bar animation.
+- On Android, `setAnimation` validates the value to match Capacitor's input contract but does not change the platform's system-bar animation (the OS composes its own).
 
 ## Contributing
 

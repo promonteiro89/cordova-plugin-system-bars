@@ -11,10 +11,11 @@ The two underlying APIs are already **shape-compatible** (same method names, sam
 
 ## Usage from OutSystems
 
-1. `npm install && npm run build` in this directory.
-2. Copy the produced `dist/outsystems.js` (the UMD build) into your OutSystems module's plugin scripts folder.
-3. Reference it from your Common.Layout (or wherever) via the `RequireScript` Client Action.
-4. Call methods on the singleton `Instance`:
+The repo ships a prebuilt `dist/` so consumers do **not** need a Node toolchain:
+
+1. Copy `dist/outsystems.js` (the UMD build) into your OutSystems module's plugin scripts folder.
+2. Reference it via the `RequireScript` Client Action (typically from your Common.Layout).
+3. Call methods on the singleton `Instance`:
 
 ```javascript
 OSSystemBarsWrapper.Instance.setStyle({ style: 'DARK' });
@@ -58,6 +59,18 @@ neither Capacitor.Plugins.SystemBars nor cordova.plugins.SystemBars is defined.
 ```
 
 This usually means the script ran before Cordova/Capacitor finished initialising. Wrap your first call in `document.addEventListener('deviceready', ...)` (Cordova) or wait for Capacitor's `ready` event.
+
+## Building from source
+
+Only needed if you modify the wrapper's TypeScript source:
+
+```sh
+cd packages/outsystems-wrapper
+npm install
+npm run build       # produces dist/outsystems.{js,cjs,mjs} + index.d.ts
+```
+
+Commit the regenerated `dist/` along with your source change so downstream consumers stay on a runnable build.
 
 ## License
 

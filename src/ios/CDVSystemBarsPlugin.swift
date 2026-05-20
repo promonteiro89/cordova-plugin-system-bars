@@ -5,17 +5,15 @@ import Cordova
 @objc(CDVSystemBarsPlugin)
 public class CDVSystemBarsPlugin: CDVPlugin {
 
-    static var currentStyle: UIStatusBarStyle = .default
-    static var isHidden: Bool = false
-    static var currentAnimation: UIStatusBarAnimation = .fade
+    fileprivate static var currentStyle: UIStatusBarStyle = .default
+    fileprivate static var isHidden: Bool = false
+    fileprivate static var currentAnimation: UIStatusBarAnimation = .fade
 
-    private static func animationDuration() -> TimeInterval {
-        switch currentAnimation {
-        case .none: return 0
-        case .slide, .fade: return 0.25
-        @unknown default: return 0.25
-        }
-    }
+    private static let validAnimations: [String: UIStatusBarAnimation] = [
+        "NONE":  .none,
+        "SLIDE": .slide,
+        "FADE":  .fade
+    ]
 
     public override func pluginInitialize() {
         super.pluginInitialize()
@@ -29,54 +27,15 @@ public class CDVSystemBarsPlugin: CDVPlugin {
         let opts = command.argument(at: 0) as? [String: Any] ?? [:]
         let style = (opts["style"] as? String) ?? "DEFAULT"
 
-        let resolved: UIStatusBarStyle
+        // 'DARK' / 'LIGHT' describe the background, not the icons — matches
+        // Capacitor's enum semantics. 'DARK' background → light icons.
         switch style {
-        case "DARK":
-            // Dark background → light icons/text
-            resolved = .lightContent
-        case "LIGHT":
-            // Light background → dark icons/text
-            if #available(iOS 13.0, *) {
-                resolved = .darkContent
-            } else {
-                resolved = .default
-            }
-        default:
-            resolved = .default
+        case "DARK":  CDVSystemBarsPlugin.currentStyle = .lightContent
+        case "LIGHT": CDVSystemBarsPlugin.currentStyle = .darkContent
+        default:      CDVSystemBarsPlugin.currentStyle = .default
         }
 
-        CDVSystemBarsPlugin.currentStyle = resolved
-
-        DispatchQueue.main.async {
-            UIView.animate(withDuration: CDVSystemBarsPlugin.animationDuration()) {
-                self.viewController?.setNeedsStatusBarAppearanceUpdate()
-            }
-            let result = CDVPluginResult(status: CDVCommandStatus_OK)
-            self.commandDelegate.send(result, callbackId: command.callbackId)
-        }
-    }
-
-    @objc(hide:)
-    func hide(_ command: CDVInvokedUrlCommand) {
-        let opts = command.argument(at: 0) as? [String: Any] ?? [:]
-        let bar = opts["bar"] as? String
-
-        // iOS has no separately controllable navigation bar — no-op success.
-        if bar == "NavigationBar" {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK)
-            self.commandDelegate.send(result, callbackId: command.callbackId)
-            return
-        }
-
-        CDVSystemBarsPlugin.isHidden = true
-
-        DispatchQueue.main.async {
-            UIView.animate(withDuration: CDVSystemBarsPlugin.animationDuration()) {
-                self.viewController?.setNeedsStatusBarAppearanceUpdate()
-            }
-            let result = CDVPluginResult(status: CDVCommandStatus_OK)
-            self.commandDelegate.send(result, callbackId: command.callbackId)
-        }
+        applyAppearanceUpdate(for: command)
     }
 
     @objc(setAnimation:)
@@ -84,46 +43,68 @@ public class CDVSystemBarsPlugin: CDVPlugin {
         let opts = command.argument(at: 0) as? [String: Any] ?? [:]
         let animation = (opts["animation"] as? String) ?? "FADE"
 
-        switch animation {
-        case "NONE":
-            CDVSystemBarsPlugin.currentAnimation = .none
-        case "SLIDE":
-            CDVSystemBarsPlugin.currentAnimation = .slide
-        case "FADE":
-            CDVSystemBarsPlugin.currentAnimation = .fade
-        default:
-            let result = CDVPluginResult(status: CDVCommandStatus_ERROR,
-                                         messageAs: "Invalid animation: \(animation)")
-            self.commandDelegate.send(result, callbackId: command.callbackId)
+        guard let value = CDVSystemBarsPlugin.validAnimations[animation] else {
+            sendError(command, "Invalid animation: \(animation)")
             return
         }
-
-        let result = CDVPluginResult(status: CDVCommandStatus_OK)
-        self.commandDelegate.send(result, callbackId: command.callbackId)
+        CDVSystemBarsPlugin.currentAnimation = value
+        sendOK(command)
     }
 
     @objc(show:)
     func show(_ command: CDVInvokedUrlCommand) {
-        let opts = command.argument(at: 0) as? [String: Any] ?? [:]
-        let bar = opts["bar"] as? String
+        setVisibility(hidden: false, for: command)
+    }
 
-        if bar == "NavigationBar" {
-            let result = CDVPluginResult(status: CDVCommandStatus_OK)
-            self.commandDelegate.send(result, callbackId: command.callbackId)
+    @objc(hide:)
+    func hide(_ command: CDVInvokedUrlCommand) {
+        setVisibility(hidden: true, for: command)
+    }
+
+    // MARK: - Helpers
+
+    /// iOS has no separately controllable navigation bar — `bar: "NavigationBar"`
+    /// resolves successfully but does not change visibility.
+    private func setVisibility(hidden: Bool, for command: CDVInvokedUrlCommand) {
+        let opts = command.argument(at: 0) as? [String: Any] ?? [:]
+        if (opts["bar"] as? String) == "NavigationBar" {
+            sendOK(command)
             return
         }
+        CDVSystemBarsPlugin.isHidden = hidden
+        applyAppearanceUpdate(for: command)
+    }
 
-        CDVSystemBarsPlugin.isHidden = false
-
+    private func applyAppearanceUpdate(for command: CDVInvokedUrlCommand) {
         DispatchQueue.main.async {
             UIView.animate(withDuration: CDVSystemBarsPlugin.animationDuration()) {
                 self.viewController?.setNeedsStatusBarAppearanceUpdate()
             }
-            let result = CDVPluginResult(status: CDVCommandStatus_OK)
-            self.commandDelegate.send(result, callbackId: command.callbackId)
+            self.sendOK(command)
         }
     }
 
+    private func sendOK(_ command: CDVInvokedUrlCommand) {
+        commandDelegate.send(
+            CDVPluginResult(status: CDVCommandStatus_OK),
+            callbackId: command.callbackId
+        )
+    }
+
+    private func sendError(_ command: CDVInvokedUrlCommand, _ message: String) {
+        commandDelegate.send(
+            CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: message),
+            callbackId: command.callbackId
+        )
+    }
+
+    private static func animationDuration() -> TimeInterval {
+        switch currentAnimation {
+        case .none:         return 0
+        case .slide, .fade: return 0.25
+        @unknown default:   return 0.25
+        }
+    }
 }
 
 extension CDVViewController {

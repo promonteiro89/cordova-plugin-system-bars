@@ -1,7 +1,7 @@
 {
   "name": "cordova-plugin-system-bars",
   "version": "1.0.0",
-  "description": "Cordova port of Capacitor's SystemBars API for OutSystems 11 / MABS 12. Edge-to-edge system bar control on Android and iOS.",
+  "description": "Cordova port of Capacitor 8's SystemBars JavaScript API for OutSystems 11 / MABS 12. Implemented natively in Kotlin (Android) and Swift (iOS).",
   "cordova": {
     "id": "com.outsystemscloud.systembars",
     "platforms": [
@@ -15,14 +15,16 @@
     "cordova-android",
     "cordova-ios",
     "outsystems",
+    "mabs",
     "system-bars",
-    "edge-to-edge"
+    "status-bar",
+    "navigation-bar"
   ],
   "engines": {
     "cordovaDependencies": {
       "1.0.0": {
         "cordova-android": ">=12.0.0",
-        "cordova-ios": ">=6.2.0"
+        "cordova-ios": ">=7.0.0"
       }
     }
   },

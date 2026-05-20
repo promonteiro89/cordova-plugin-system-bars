@@ -1,20 +1,17 @@
-/*
+/**
  * OSSystemBarsWrapper
  *
- * A thin runtime dispatcher that lets OutSystems Client Actions use a
- * single API surface against either:
- *   - this Cordova plugin (cordova.plugins.SystemBars), on O11 / MABS
- *   - @capacitor/system-bars (Capacitor.Plugins.SystemBars), on ODC
+ * Runtime dispatcher that lets a single OutSystems Client Action use the
+ * same JavaScript API against:
+ *   - cordova.plugins.SystemBars   (this Cordova plugin, on O11 / MABS)
+ *   - Capacitor.Plugins.SystemBars (\@capacitor/system-bars, on ODC)
  *
- * The two underlying APIs are already shape-compatible (same method names,
- * same option shapes, Promise return values), so this wrapper does no
- * argument translation — it just picks the available plugin and forwards
- * the call.
+ * Both implementations are already shape-compatible (same method names,
+ * same option shapes, Promise return values) so the wrapper performs no
+ * argument translation — it picks whichever is present at the first call
+ * site, caches it, and forwards subsequent calls directly.
  *
  *   OSSystemBarsWrapper.Instance.setStyle({ style: 'DARK' });
- *
- * Mirrors the pattern of OutSystems' own first-party wrappers
- * (cordova-outsystems-file, cordova-outsystems-geolocation).
  */
 
 export type SystemBarsStyle = 'DARK' | 'LIGHT' | 'DEFAULT';
@@ -34,10 +31,7 @@ export interface ShowOrHideOptions {
     bar?: SystemBar;
 }
 
-/**
- * Common shape implemented by both this Cordova plugin and
- * \@capacitor/system-bars.
- */
+/** Common shape implemented by both Cordova and Capacitor SystemBars plugins. */
 export interface SystemBarsPlugin {
     setStyle(options: SetStyleOptions): Promise<void>;
     setAnimation(options: SetAnimationOptions): Promise<void>;
@@ -64,49 +58,40 @@ class OSSystemBars implements SystemBarsPlugin {
         return this.#resolve().hide(options);
     }
 
-    /**
-     * @returns `true` if @capacitor/system-bars is available at runtime.
-     */
+    /** Whether \@capacitor/system-bars is available on the current runtime. */
     isCapacitorPluginDefined(): boolean {
-        if (typeof window === 'undefined') return false;
-        const w = window as any;
-        return !!(w.Capacitor?.Plugins?.SystemBars || w.CapacitorPlugins?.SystemBars);
+        return OSSystemBars.#capacitorPlugin() !== undefined;
     }
 
-    /**
-     * @returns `true` if this Cordova plugin is available at runtime.
-     */
+    /** Whether this Cordova plugin is available on the current runtime. */
     isCordovaPluginDefined(): boolean {
-        if (typeof window === 'undefined') return false;
-        const w = window as any;
-        return !!w.cordova?.plugins?.SystemBars;
+        return OSSystemBars.#cordovaPlugin() !== undefined;
     }
 
     #resolve(): SystemBarsPlugin {
         if (this.#cached) return this.#cached;
 
-        if (typeof window !== 'undefined') {
-            const w = window as any;
-
-            // Prefer Capacitor when present (matches ODC builds).
-            const capacitor: SystemBarsPlugin | undefined =
-                w.Capacitor?.Plugins?.SystemBars ?? w.CapacitorPlugins?.SystemBars;
-            if (capacitor) {
-                this.#cached = capacitor;
-                return capacitor;
-            }
-
-            const cordova: SystemBarsPlugin | undefined = w.cordova?.plugins?.SystemBars;
-            if (cordova) {
-                this.#cached = cordova;
-                return cordova;
-            }
+        // Prefer Capacitor when present so ODC builds use the native API.
+        const found = OSSystemBars.#capacitorPlugin() ?? OSSystemBars.#cordovaPlugin();
+        if (!found) {
+            throw new Error(
+                'OSSystemBarsWrapper: no SystemBars implementation available — ' +
+                    'neither Capacitor.Plugins.SystemBars nor cordova.plugins.SystemBars is defined.'
+            );
         }
+        this.#cached = found;
+        return found;
+    }
 
-        throw new Error(
-            'OSSystemBarsWrapper: no SystemBars implementation available — ' +
-                'neither Capacitor.Plugins.SystemBars nor cordova.plugins.SystemBars is defined.'
-        );
+    static #capacitorPlugin(): SystemBarsPlugin | undefined {
+        if (typeof window === 'undefined') return undefined;
+        const w = window as any;
+        return w.Capacitor?.Plugins?.SystemBars ?? w.CapacitorPlugins?.SystemBars;
+    }
+
+    static #cordovaPlugin(): SystemBarsPlugin | undefined {
+        if (typeof window === 'undefined') return undefined;
+        return (window as any).cordova?.plugins?.SystemBars;
     }
 }
 
