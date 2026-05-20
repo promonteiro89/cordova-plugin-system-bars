@@ -14,6 +14,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
 - [Requirements](#requirements)
 - [Installation](#installation)
   - [OutSystems 11 (Extensibility Configurations)](#outsystems-11-extensibility-configurations)
+    - [Cross-runtime install (O11 Cordova + ODC Capacitor)](#cross-runtime-install-o11-cordova--odc-capacitor)
   - [Cordova CLI](#cordova-cli)
 - [Usage](#usage)
 - [API reference](#api-reference)
@@ -71,6 +72,47 @@ Paste this into the **Extensibility Configurations** property of your OutSystems
 ```
 
 Pin the tag (`#1.0.0`) so MABS does not silently pull breaking changes.
+
+#### Cross-runtime install (O11 Cordova + ODC Capacitor)
+
+If the same OutSystems module is built for both **O11 / MABS (Cordova)** and **ODC (Capacitor)**, use the unified manifest below. The OutSystems platform reads the matching `buildConfigurations.<target>` block per build target and installs the appropriate plugin — this Cordova plugin on O11, and [`@capacitor/system-bars`](https://capacitorjs.com/docs/apis/system-bars) on ODC.
+
+```json
+{
+  "plugin": {
+    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
+  },
+  "buildConfigurations": {
+    "cordova": {
+      "source": {
+        "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
+      }
+    },
+    "capacitor": {
+      "source": {
+        "npm": "@capacitor/system-bars@8.0.0"
+      }
+    }
+  },
+  "metadata": {
+    "mabs-min": "12.0.0",
+    "name": "SystemBars",
+    "version": "1.0.0"
+  }
+}
+```
+
+This solves install-time portability. The **runtime** API surface is also nearly identical (Capacitor's `SystemBars` was the spec we mirrored), but the *access path* differs between runtimes — on O11 the plugin lives at `cordova.plugins.SystemBars`, on ODC at `Capacitor.Plugins.SystemBars`. Resolve it once at the top of your Client Action helper:
+
+```javascript
+const SystemBars =
+    (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SystemBars)
+    || (window.cordova && window.cordova.plugins && window.cordova.plugins.SystemBars);
+
+SystemBars.setStyle({ style: 'DARK' });
+```
+
+With the dual-install manifest above plus that one-liner, the same Client Action runs unchanged on O11 and ODC.
 
 ### Cordova CLI
 
