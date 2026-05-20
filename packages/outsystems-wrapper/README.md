@@ -1,13 +1,11 @@
 # OSSystemBarsWrapper
 
-A thin runtime dispatcher that picks whichever SystemBars implementation is registered on the host runtime and forwards the call:
+A thin runtime dispatcher that lets a single OutSystems Client Action use the same JavaScript API across both supported runtimes:
 
-- `cordova.plugins.SystemBars` — this Cordova plugin, installed on **both** O11 / MABS and ODC (the latter via Capacitor's Cordova-compat layer).
-- `Capacitor.Plugins.SystemBars` — `@capacitor/core`'s built-in plugin on **ODC**.
+- `cordova.plugins.SystemBars` — this Cordova plugin, installed on **O11 / MABS** builds.
+- `Capacitor.Plugins.SystemBars` — `@capacitor/core`'s built-in plugin, available on **ODC** builds.
 
-**When you need this wrapper:** only if you've configured your ODC build to use `@capacitor/core`'s built-in SystemBars instead of this Cordova plugin. If your Extensibility Configurations installs this plugin on both `buildConfigurations.cordova` and `buildConfigurations.capacitor` (the default recipe in the [parent README](../../README.md#cross-runtime-usage-o11-cordova--odc-capacitor)), you can just call `cordova.plugins.SystemBars.X()` directly on both runtimes — no wrapper needed.
-
-The wrapper is included for teams who prefer to use `@capacitor/core`'s native Capacitor plugin on ODC. The two underlying APIs are already **shape-compatible** (same method names, same option shapes, Promise return values), so this wrapper performs **no argument translation** — it simply picks the available plugin at the call site and forwards the call.
+The two underlying APIs are **shape-compatible** (same method names, same option shapes, Promise return values), so this wrapper performs **no argument translation** — it picks whichever is present at the first call, caches it, and forwards subsequent calls directly.
 
 ## Usage from OutSystems
 

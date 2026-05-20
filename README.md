@@ -77,12 +77,9 @@ Pin the tag (`#1.0.0`) so MABS does not silently pull breaking changes.
 
 #### Cross-runtime usage (O11 Cordova + ODC Capacitor)
 
-This plugin runs on **both** OutSystems runtimes:
+This plugin is a **Cordova plugin** and installs only on the **O11 / MABS** build target. On **ODC**, you don't need to install anything — `@capacitor/core` already exposes `Capacitor.Plugins.SystemBars` as a built-in. The two implementations expose the same Capacitor-spec API on different globals (`cordova.plugins.SystemBars` on O11, `Capacitor.Plugins.SystemBars` on ODC), so a single Client Action can run on both runtimes by resolving the access path once.
 
-- On **O11 / MABS** the plugin installs natively, as a Cordova plugin.
-- On **ODC** the plugin installs through Capacitor's [Cordova-plugin compat layer](https://capacitorjs.com/docs/plugins/cordova). The same `cordova.plugins.SystemBars` global is wired up on both runtimes, and the iOS half is set up to attach its status-bar overrides to `CDVViewController` *and* `CAPBridgeViewController` (guarded by `#if canImport(Capacitor)`) so the overrides actually take effect on ODC's root VC.
-
-A single Extensibility Configurations entry installs the plugin for both build targets:
+OutSystems Extensibility Configurations:
 
 ```json
 {
@@ -91,11 +88,6 @@ A single Extensibility Configurations entry installs the plugin for both build t
   },
   "buildConfigurations": {
     "cordova": {
-      "source": {
-        "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
-      }
-    },
-    "capacitor": {
       "source": {
         "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0"
       }
@@ -109,13 +101,17 @@ A single Extensibility Configurations entry installs the plugin for both build t
 }
 ```
 
-Once installed, the same JavaScript call works on both runtimes:
+To make a Client Action that works on both runtimes without branching, either use the [bundled wrapper](#cross-runtime-wrapper-ossystembarswrapper) (recommended), or pick the implementation manually:
 
 ```javascript
-cordova.plugins.SystemBars.setStyle({ style: 'DARK' });
+const SystemBars =
+    (window.Capacitor && window.Capacitor.Plugins && window.Capacitor.Plugins.SystemBars)
+    || (window.cordova && window.cordova.plugins && window.cordova.plugins.SystemBars);
+
+SystemBars.setStyle({ style: 'DARK' });
 ```
 
-If you'd rather use `@capacitor/core`'s built-in `Capacitor.Plugins.SystemBars` on ODC (it's bundled with the Capacitor runtime), drop the `buildConfigurations.capacitor` block above and use [the bundled wrapper](#cross-runtime-wrapper-ossystembarswrapper) — it detects whichever implementation is present and forwards to it.
+> **Advanced**: if you'd rather route all SystemBars calls through *this* Cordova plugin on ODC too (instead of `@capacitor/core`'s built-in), add a `"capacitor": { "source": { "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0" } }` block alongside `cordova` and Capacitor will install this plugin via its [Cordova-plugin compat layer](https://capacitorjs.com/docs/plugins/cordova). The iOS code already handles this case — it extends both `CDVViewController` and (under `#if canImport(Capacitor)`) `CAPBridgeViewController` so the status-bar overrides take effect on either root VC. This is unconventional (the OutSystems convention reserves `buildConfigurations.capacitor` for Capacitor-native packages) but functional.
 
 ### Cordova CLI
 
@@ -297,7 +293,7 @@ Make sure your viewport meta tag includes `viewport-fit=cover`, otherwise iOS re
 
 ## Differences from Capacitor's SystemBars
 
-- The plugin object lives at `cordova.plugins.SystemBars` (with `window.CustomSystemBars` as a deprecated alias) on both O11 and ODC builds. ODC apps also have access to `Capacitor.Plugins.SystemBars` from `@capacitor/core`'s built-in plugin; if you'd rather route through that one on ODC, use the [bundled wrapper](packages/outsystems-wrapper/README.md) or `const SystemBars = window.Capacitor?.Plugins?.SystemBars ?? cordova.plugins.SystemBars;`.
+- The plugin object lives at `cordova.plugins.SystemBars` (with `window.CustomSystemBars` as a deprecated alias) on O11 builds. ODC builds use `Capacitor.Plugins.SystemBars` from `@capacitor/core`'s built-in plugin (this Cordova plugin does not install on ODC by default). For Client Actions that run on both, use the [bundled wrapper](packages/outsystems-wrapper/README.md) or `const SystemBars = window.Capacitor?.Plugins?.SystemBars ?? cordova.plugins.SystemBars;`.
 - Capacitor's [legacy Status Bar plugin](https://capacitorjs.com/docs/apis/status-bar) (`setBackgroundColor`, `setOverlaysWebView`) is **not** ported — those methods are intentionally not part of Capacitor's `SystemBars` API and are out of scope here too.
 - On Android, `setAnimation` validates the value to match Capacitor's input contract but does not change the platform's system-bar animation (the OS composes its own).
 
