@@ -43,7 +43,10 @@ public class CDVSystemBarsPlugin: CDVPlugin {
         let animation = (opts["animation"] as? String) ?? "FADE"
 
         guard let value = CDVSystemBarsPlugin.validAnimations[animation] else {
-            sendError(command, "Invalid animation: \(animation)")
+            sendError(command, .invalidInput(
+                method: .setAnimation,
+                reason: "'animation' must be one of \(Self.validAnimationKeys()) (got '\(animation)')."
+            ))
             return
         }
         CDVSystemBarsPlugin.currentAnimation = value
@@ -78,7 +81,10 @@ public class CDVSystemBarsPlugin: CDVPlugin {
 
         if let raw = opts["animation"] as? String {
             guard CDVSystemBarsPlugin.validAnimations[raw] != nil else {
-                sendError(command, "Invalid animation: \(raw)")
+                sendError(command, .invalidInput(
+                    method: hidden ? .hide : .show,
+                    reason: "'animation' must be one of \(Self.validAnimationKeys()) (got '\(raw)')."
+                ))
                 return
             }
         }
@@ -119,11 +125,15 @@ public class CDVSystemBarsPlugin: CDVPlugin {
         )
     }
 
-    private func sendError(_ command: CDVInvokedUrlCommand, _ message: String) {
+    private func sendError(_ command: CDVInvokedUrlCommand, _ error: OSSystemBarsError) {
         commandDelegate.send(
-            CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: message),
+            CDVPluginResult(status: CDVCommandStatus_ERROR, messageAs: error.toDictionary()),
             callbackId: command.callbackId
         )
+    }
+
+    private static func validAnimationKeys() -> String {
+        return validAnimations.keys.sorted().joined(separator: ", ")
     }
 
     private static func animationDuration() -> TimeInterval {

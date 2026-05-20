@@ -1,6 +1,6 @@
 {
   "name": "cordova-plugin-system-bars",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "description": "Cordova port of Capacitor 8's SystemBars JavaScript API for OutSystems 11 / MABS 12. Implemented natively in Kotlin (Android) and Swift (iOS).",
   "cordova": {
     "id": "com.outsystemscloud.systembars",

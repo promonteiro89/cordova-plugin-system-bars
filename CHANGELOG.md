@@ -4,6 +4,23 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.2] - 2026-05-20
+
+Structured error payloads, matching the convention used by OutSystems' own first-party Cordova plugins.
+
+### Changed
+
+- Native error responses are now JSON objects of the shape `{ code, message }` instead of plain message strings. The JavaScript bridge surfaces them unchanged, so a Promise rejection now exposes `error.code` and `error.message` directly — no defensive type-checking needed in the consumer.
+- New error-code namespace under `OS-PLUG-SYSBARS-`:
+  - `0005` — invalid input (e.g. `setAnimation({ animation: 'SLIDE' })`).
+  - `0010` — `WindowInsetsController` unavailable on the device (Android-specific).
+  - `0013` — generic operation failure (caught exception fallback).
+
+### Added
+
+- **Android**: `OSSystemBarsErrors` object + `CallbackContext.sendError(ErrorInfo)` extension to package structured errors as `PluginResult` JSON objects.
+- **iOS**: `OSSystemBarsError` enum + `toDictionary()` helper to package structured errors via `CDVPluginResult(messageAs: [String: String])`.
+
 ## [1.0.1] - 2026-05-20
 
 Post-1.0.0 polish, plus the iOS code needed to make this plugin's status-bar overrides actually take effect when installed on ODC via Capacitor's Cordova-compat layer.
@@ -45,5 +62,6 @@ Initial public release.
 - On Android, `setAnimation` and the per-call `animation` parameter validate the value to honor Capacitor's contract; the platform composes its own system-bar animation either way.
 - Capacitor 8's `SystemBars` is bundled with `@capacitor/core` — no separate npm package. ODC apps already have it; only the O11 build needs this plugin installed.
 
+[1.0.2]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.2
 [1.0.1]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.1
 [1.0.0]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.0

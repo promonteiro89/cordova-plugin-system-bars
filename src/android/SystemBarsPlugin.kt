@@ -17,21 +17,25 @@ class SystemBarsPlugin : CordovaPlugin() {
 
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
         when (action) {
-            "setStyle"     -> runOnUi(callback) { applyStyle(args.optJSONObject(0), callback) }
-            "show"         -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), show = true,  callback) }
-            "hide"         -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), show = false, callback) }
+            "setStyle"     -> runOnUi(callback, "setStyle") { applyStyle(args.optJSONObject(0), callback) }
+            "show"         -> runOnUi(callback, "show")    { applyVisibility(args.optJSONObject(0), show = true,  callback) }
+            "hide"         -> runOnUi(callback, "hide")    { applyVisibility(args.optJSONObject(0), show = false, callback) }
             "setAnimation" -> applyAnimation(args.optJSONObject(0), callback)
             else -> return false   // Cordova replies with INVALID_ACTION.
         }
         return true
     }
 
-    private inline fun runOnUi(callback: CallbackContext, crossinline block: () -> Unit) {
+    private inline fun runOnUi(
+        callback: CallbackContext,
+        method: String,
+        crossinline block: () -> Unit
+    ) {
         cordova.activity.runOnUiThread {
             try {
                 block()
             } catch (e: Exception) {
-                callback.error(e.message ?: e.toString())
+                callback.sendError(OSSystemBarsErrors.operationFailed(method, e.message ?: e.toString()))
             }
         }
     }
@@ -39,7 +43,7 @@ class SystemBarsPlugin : CordovaPlugin() {
     private fun applyStyle(opts: JSONObject?, callback: CallbackContext) {
         val controller = insetsController()
         if (controller == null) {
-            callback.error("WindowInsetsController unavailable")
+            callback.sendError(OSSystemBarsErrors.windowControllerUnavailable)
             return
         }
 
@@ -69,16 +73,20 @@ class SystemBarsPlugin : CordovaPlugin() {
     private fun applyVisibility(opts: JSONObject?, show: Boolean, callback: CallbackContext) {
         val controller = insetsController()
         if (controller == null) {
-            callback.error("WindowInsetsController unavailable")
+            callback.sendError(OSSystemBarsErrors.windowControllerUnavailable)
             return
         }
 
-        // Validate the optional per-call 'animation' for API parity with
-        // Capacitor's SystemBarsVisibilityOptions. The platform animates the
-        // transition itself on Android, so the value is accepted but unused.
+        // The optional per-call 'animation' parameter is validated for API
+        // parity with Capacitor's SystemBarsVisibilityOptions. The platform
+        // animates the transition itself on Android, so the value is accepted
+        // but unused.
         val animation = opts?.optString("animation", null)
         if (animation != null && animation !in VALID_ANIMATIONS) {
-            callback.error("Invalid animation: $animation")
+            callback.sendError(OSSystemBarsErrors.invalidInput(
+                method = if (show) "show" else "hide",
+                reason = "'animation' must be one of ${VALID_ANIMATIONS.joinToString()} (got '$animation')."
+            ))
             return
         }
 
@@ -105,7 +113,10 @@ class SystemBarsPlugin : CordovaPlugin() {
     private fun applyAnimation(opts: JSONObject?, callback: CallbackContext) {
         val animation = opts?.optString("animation", "FADE") ?: "FADE"
         if (animation !in VALID_ANIMATIONS) {
-            callback.error("Invalid animation: $animation")
+            callback.sendError(OSSystemBarsErrors.invalidInput(
+                method = "setAnimation",
+                reason = "'animation' must be one of ${VALID_ANIMATIONS.joinToString()} (got '$animation')."
+            ))
             return
         }
         callback.success()
