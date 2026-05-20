@@ -10,7 +10,6 @@
 
     <js-module src="www/systembars.js" name="SystemBars">
         <clobbers target="cordova.plugins.SystemBars" />
-        <clobbers target="window.CustomSystemBars" />
     </js-module>
 
     <platform name="android">

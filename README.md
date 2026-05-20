@@ -158,7 +158,7 @@ All methods return a `Promise<void>` that rejects with a string error message on
 
 ## API reference
 
-All methods are exposed on **`cordova.plugins.SystemBars`** (the canonical Cordova access path). For backwards compatibility, the same object is also assigned to **`window.CustomSystemBars`** — existing Client Actions that use the legacy global continue to work, but new code should prefer `cordova.plugins.SystemBars`.
+All methods are exposed on **`cordova.plugins.SystemBars`**.
 
 ### `setStyle(options)`
 
@@ -293,7 +293,7 @@ Make sure your viewport meta tag includes `viewport-fit=cover`, otherwise iOS re
 
 ## Differences from Capacitor's SystemBars
 
-- The plugin object lives at `cordova.plugins.SystemBars` (with `window.CustomSystemBars` as a deprecated alias) on O11 builds. ODC builds use `Capacitor.Plugins.SystemBars` from `@capacitor/core`'s built-in plugin (this Cordova plugin does not install on ODC by default). For Client Actions that run on both, use the [bundled wrapper](packages/outsystems-wrapper/README.md) or `const SystemBars = window.Capacitor?.Plugins?.SystemBars ?? cordova.plugins.SystemBars;`.
+- The plugin object lives at `cordova.plugins.SystemBars` on O11 builds. ODC builds use `Capacitor.Plugins.SystemBars` from `@capacitor/core`'s built-in plugin (this Cordova plugin does not install on ODC by default). For Client Actions that run on both, use the [bundled wrapper](packages/outsystems-wrapper/README.md) or `const SystemBars = window.Capacitor?.Plugins?.SystemBars ?? cordova.plugins.SystemBars;`.
 - Capacitor's [legacy Status Bar plugin](https://capacitorjs.com/docs/apis/status-bar) (`setBackgroundColor`, `setOverlaysWebView`) is **not** ported — those methods are intentionally not part of Capacitor's `SystemBars` API and are out of scope here too.
 - On Android, `setAnimation` validates the value to match Capacitor's input contract but does not change the platform's system-bar animation (the OS composes its own).
 
