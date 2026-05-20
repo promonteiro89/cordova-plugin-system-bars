@@ -17,6 +17,7 @@ yarn-error.log*
 # Build artifacts
 build/
 dist/
+!packages/outsystems-wrapper/dist/
 *.log
 
 # OutSystems / Cordova local scratch

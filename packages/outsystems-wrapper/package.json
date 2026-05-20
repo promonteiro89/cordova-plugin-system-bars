@@ -1,0 +1,24 @@
+{
+  "name": "com.outsystemscloud.systembars.wrapper",
+  "displayName": "OSSystemBarsWrapper",
+  "version": "1.0.0",
+  "description": "Wrapper for consuming the SystemBars plugin from either Cordova (this plugin) or Capacitor (@capacitor/system-bars) with the same JavaScript API.",
+  "scripts": {
+    "build": "rimraf ./dist && vite build"
+  },
+  "keywords": [
+    "cordova",
+    "capacitor",
+    "outsystems",
+    "system-bars"
+  ],
+  "author": "OutSystems community",
+  "license": "MIT",
+  "devDependencies": {
+    "@types/cordova": "^11.0.3",
+    "rimraf": "^3.0.2",
+    "typescript": "~5.4.5",
+    "vite": "^5.2.11",
+    "vite-plugin-dts": "^4.4.0"
+  }
+}

@@ -16,6 +16,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [OutSystems 11 (Extensibility Configurations)](#outsystems-11-extensibility-configurations)
     - [Cross-runtime install (O11 Cordova + ODC Capacitor)](#cross-runtime-install-o11-cordova--odc-capacitor)
   - [Cordova CLI](#cordova-cli)
+  - [Cross-runtime wrapper (`OSSystemBarsWrapper`)](#cross-runtime-wrapper-ossystembarswrapper)
 - [Usage](#usage)
 - [API reference](#api-reference)
   - [`setStyle(options)`](#setstyleoptions)
@@ -121,6 +122,17 @@ For local testing in a vanilla Cordova project:
 ```sh
 cordova plugin add https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.0
 ```
+
+### Cross-runtime wrapper (`OSSystemBarsWrapper`)
+
+For OutSystems modules that target both O11 and ODC, the repo also ships a small dispatcher under [`packages/outsystems-wrapper/`](packages/outsystems-wrapper/README.md) that hides the runtime difference behind a single API surface (mirroring the pattern of `cordova-outsystems-file` and `cordova-outsystems-geolocation`). Copy the prebuilt `packages/outsystems-wrapper/dist/outsystems.js` into your module's scripts folder, `RequireScript` it, then call:
+
+```javascript
+OSSystemBarsWrapper.Instance.setStyle({ style: 'DARK' });
+OSSystemBarsWrapper.Instance.hide({ bar: 'StatusBar' });
+```
+
+The wrapper resolves to `Capacitor.Plugins.SystemBars` on ODC builds and `cordova.plugins.SystemBars` on O11 builds. No translation is done — both APIs are already shape-compatible. See the [wrapper README](packages/outsystems-wrapper/README.md) for full usage.
 
 ## Usage
 
