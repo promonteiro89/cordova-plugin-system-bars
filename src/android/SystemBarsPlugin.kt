@@ -1,6 +1,7 @@
 package com.outsystemscloud.systembars
 
 import android.content.res.Configuration
+import android.graphics.Color
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -22,6 +23,7 @@ class SystemBarsPlugin : CordovaPlugin() {
             "show" -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), true, callback) }
             "hide" -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), false, callback) }
             "setAnimation" -> runOnUi(callback) { applyAnimation(args.optJSONObject(0), callback) }
+            "setColor" -> runOnUi(callback) { applyColor(args.optJSONObject(0), callback) }
             else -> {
                 callback.error("Unknown action: $action")
                 return true
@@ -106,6 +108,33 @@ class SystemBarsPlugin : CordovaPlugin() {
             return
         }
         currentAnimation = animation
+        callback.success()
+    }
+
+    private fun applyColor(opts: JSONObject?, callback: CallbackContext) {
+        val raw = opts?.optString("color", null)
+        if (raw.isNullOrEmpty()) {
+            callback.error("Missing 'color' option (expected '#RRGGBB' or '#AARRGGBB')")
+            return
+        }
+        val parsed: Int = try {
+            Color.parseColor(raw)
+        } catch (e: IllegalArgumentException) {
+            callback.error("Invalid color: $raw")
+            return
+        }
+        // window.statusBarColor / navigationBarColor are no-ops on Android 15
+        // (API 35+), which enforces edge-to-edge at the platform level. The
+        // call still succeeds so callers don't need to branch on OS version.
+        val window = cordova.activity.window
+        when (opts.optString("bar", null)) {
+            "StatusBar" -> window.statusBarColor = parsed
+            "NavigationBar" -> window.navigationBarColor = parsed
+            else -> {
+                window.statusBarColor = parsed
+                window.navigationBarColor = parsed
+            }
+        }
         callback.success()
     }
 }
