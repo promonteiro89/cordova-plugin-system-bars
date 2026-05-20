@@ -128,7 +128,7 @@ cordova plugin add https://github.com/promonteiro89/cordova-plugin-system-bars.g
 
 ### Cross-runtime wrapper (`OSSystemBarsWrapper`)
 
-For OutSystems modules that target both O11 and ODC, the repo also ships a small dispatcher under [`packages/outsystems-wrapper/`](packages/outsystems-wrapper/README.md) that hides the runtime difference behind a single API surface (mirroring the pattern of `cordova-outsystems-file` and `cordova-outsystems-geolocation`). Copy the prebuilt `packages/outsystems-wrapper/dist/outsystems.js` into your module's scripts folder, `RequireScript` it, then call:
+For OutSystems modules that target both O11 and ODC, the repo also ships a small dispatcher under [`packages/outsystems-wrapper/`](packages/outsystems-wrapper/README.md) that hides the runtime difference behind a single API surface. Copy the prebuilt `packages/outsystems-wrapper/dist/outsystems.js` into your module's scripts folder, `RequireScript` it, then call:
 
 ```javascript
 OSSystemBarsWrapper.Instance.setStyle({ style: 'DARK' });

@@ -7,7 +7,7 @@ A thin runtime dispatcher that picks whichever SystemBars implementation is regi
 
 **When you need this wrapper:** only if you've configured your ODC build to use `@capacitor/core`'s built-in SystemBars instead of this Cordova plugin. If your Extensibility Configurations installs this plugin on both `buildConfigurations.cordova` and `buildConfigurations.capacitor` (the default recipe in the [parent README](../../README.md#cross-runtime-usage-o11-cordova--odc-capacitor)), you can just call `cordova.plugins.SystemBars.X()` directly on both runtimes — no wrapper needed.
 
-The wrapper is included for parity with the pattern used by OutSystems' own first-party plugins ([`cordova-outsystems-file`](https://github.com/ionic-team/cordova-outsystems-file), [`cordova-outsystems-geolocation`](https://github.com/ionic-team/cordova-outsystems-geolocation)) and for teams who prefer to use the native Capacitor plugin on ODC. The two underlying APIs are already **shape-compatible** (same method names, same option shapes, Promise return values), so this wrapper performs **no argument translation** — it simply picks the available plugin at the call site and forwards the call.
+The wrapper is included for teams who prefer to use `@capacitor/core`'s native Capacitor plugin on ODC. The two underlying APIs are already **shape-compatible** (same method names, same option shapes, Promise return values), so this wrapper performs **no argument translation** — it simply picks the available plugin at the call site and forwards the call.
 
 ## Usage from OutSystems
 
