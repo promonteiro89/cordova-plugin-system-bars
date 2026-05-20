@@ -1,6 +1,7 @@
 # cordova-plugin-system-bars
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
+[![Cordova](https://img.shields.io/badge/cordova-plugin-2C3E50.svg)](https://cordova.apache.org/)
 [![Platforms](https://img.shields.io/badge/platforms-android%20%7C%20ios-blue.svg)](#requirements)
 [![MABS](https://img.shields.io/badge/MABS-12%2B-orange.svg)](#requirements)
 
