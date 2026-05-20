@@ -22,6 +22,9 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [`hide(options?)`](#hideoptions)
   - [`setAnimation(options)`](#setanimationoptions)
   - [`setColor(options)`](#setcoloroptions)
+  - [`setHomeIndicatorHidden(options)`](#sethomeindicatorhiddenoptions)
+  - [`getInsets()`](#getinsets)
+  - [`getInfo()`](#getinfo)
 - [Style semantics](#style-semantics)
 - [Declarative configuration (MABS 12 preferences)](#declarative-configuration-mabs-12-preferences)
   - [Where to set the preferences](#where-to-set-the-preferences)
@@ -103,6 +106,15 @@ window.CustomSystemBars.setAnimation({ animation: 'SLIDE' });
 
 // Tint both bars black (Android only)
 window.CustomSystemBars.setColor({ color: '#000000' });
+
+// Hide the iOS home indicator (e.g. for a scanner screen)
+window.CustomSystemBars.setHomeIndicatorHidden({ hidden: true });
+
+// Query insets and current state
+const insets = await window.CustomSystemBars.getInsets();
+// → { top, bottom, left, right }  in CSS pixels
+const info = await window.CustomSystemBars.getInfo();
+// → { statusBar: { visible, style }, navigationBar: { visible, style } }
 ```
 
 All methods return a `Promise<void>` that rejects with a string error message on failure.
@@ -159,6 +171,46 @@ Important caveats:
 
 - **Android 15+ (API 35+)**: `window.statusBarColor` and `window.navigationBarColor` are platform-level no-ops because edge-to-edge is enforced. The call still resolves successfully so cross-platform code doesn't need to branch on OS version. If you need a colored bar on Android 15, disable edge-to-edge declaratively with `AndroidEdgeToEdge=false` in MABS preferences (and accept that you lose edge-to-edge across the app).
 - **iOS**: documented no-op. iOS has no API to color the status bar background independently of the app's content. The cross-platform pattern is to paint your app header/footer in the desired color and let it extend behind the system bars via safe-area insets.
+
+### `setHomeIndicatorHidden(options)`
+
+> Plugin extension — iOS-specific. Hides the home indicator pill on bezel-less iPhones (useful for scanners, fullscreen video, immersive games). Android resolves successfully and does nothing (no home indicator concept).
+
+| Parameter | Type | Required | Description |
+|-----------|------|----------|-------------|
+| `options.hidden` | `boolean` | yes | `true` to hide the home indicator, `false` to show it. |
+
+Driven by overriding `prefersHomeIndicatorAutoHidden` on `CDVViewController`. The change is committed via `setNeedsUpdateOfHomeIndicatorAutoHidden()` (iOS 11+).
+
+### `getInsets()`
+
+> Plugin extension — cross-platform. Returns the current system-bar safe-area insets in **CSS pixels** (== iOS points; on Android the physical pixels are converted using `displayMetrics.density`).
+
+No arguments. Resolves with:
+
+```ts
+{ top: number, bottom: number, left: number, right: number }
+```
+
+Useful when you need a numeric value for layout calculations and CSS `env(safe-area-inset-*)` isn't enough (e.g. measuring a flex container, computing a sticky-header offset in JS).
+
+### `getInfo()`
+
+> Plugin extension — cross-platform. Returns the current visibility and style of each bar.
+
+No arguments. Resolves with:
+
+```ts
+{
+  statusBar:     { visible: boolean, style: 'LIGHT' | 'DARK' | 'DEFAULT' },
+  navigationBar: { visible: boolean, style: 'LIGHT' | 'DARK' | 'DEFAULT' }
+}
+```
+
+Notes:
+
+- The `style` field reports the **current effective** appearance, derived from the OS state at call time, not the last `style` argument you passed. `'DEFAULT'` is only returned by iOS when the status bar style is `.default`; Android always resolves to `'LIGHT'` or `'DARK'`.
+- On iOS, the `navigationBar` field is a stable placeholder (`{ visible: true, style: 'DEFAULT' }`) so cross-platform code can rely on the same response shape.
 
 ## Style semantics
 

@@ -2,6 +2,7 @@ package com.outsystemscloud.systembars
 
 import android.content.res.Configuration
 import android.graphics.Color
+import androidx.core.view.ViewCompat
 import androidx.core.view.WindowCompat
 import androidx.core.view.WindowInsetsCompat
 import androidx.core.view.WindowInsetsControllerCompat
@@ -24,6 +25,13 @@ class SystemBarsPlugin : CordovaPlugin() {
             "hide" -> runOnUi(callback) { applyVisibility(args.optJSONObject(0), false, callback) }
             "setAnimation" -> runOnUi(callback) { applyAnimation(args.optJSONObject(0), callback) }
             "setColor" -> runOnUi(callback) { applyColor(args.optJSONObject(0), callback) }
+            "setHomeIndicatorHidden" -> {
+                // Android has no home indicator. Resolve successfully for
+                // cross-platform parity (mirrors iOS NavigationBar no-op).
+                callback.success()
+            }
+            "getInsets" -> runOnUi(callback) { applyGetInsets(callback) }
+            "getInfo" -> runOnUi(callback) { applyGetInfo(callback) }
             else -> {
                 callback.error("Unknown action: $action")
                 return true
@@ -109,6 +117,42 @@ class SystemBarsPlugin : CordovaPlugin() {
         }
         currentAnimation = animation
         callback.success()
+    }
+
+    private fun applyGetInsets(callback: CallbackContext) {
+        val decor = cordova.activity.window.decorView
+        val windowInsets = ViewCompat.getRootWindowInsets(decor)
+        if (windowInsets == null) {
+            callback.error("Window insets not available")
+            return
+        }
+        // Return CSS pixels (== iOS points) for cross-platform consistency.
+        // Android's WindowInsets are in physical pixels; divide by density.
+        val density = cordova.activity.resources.displayMetrics.density
+        val insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars())
+        val result = JSONObject()
+            .put("top", (insets.top / density).toDouble())
+            .put("bottom", (insets.bottom / density).toDouble())
+            .put("left", (insets.left / density).toDouble())
+            .put("right", (insets.right / density).toDouble())
+        callback.success(result)
+    }
+
+    private fun applyGetInfo(callback: CallbackContext) {
+        val window = cordova.activity.window
+        val decor = window.decorView
+        val controller = WindowCompat.getInsetsController(window, decor)
+        val windowInsets = ViewCompat.getRootWindowInsets(decor)
+
+        val statusVisible = windowInsets?.isVisible(WindowInsetsCompat.Type.statusBars()) ?: true
+        val navVisible = windowInsets?.isVisible(WindowInsetsCompat.Type.navigationBars()) ?: true
+        val statusStyle = if (controller?.isAppearanceLightStatusBars == true) "LIGHT" else "DARK"
+        val navStyle = if (controller?.isAppearanceLightNavigationBars == true) "LIGHT" else "DARK"
+
+        val result = JSONObject()
+            .put("statusBar", JSONObject().put("visible", statusVisible).put("style", statusStyle))
+            .put("navigationBar", JSONObject().put("visible", navVisible).put("style", navStyle))
+        callback.success(result)
     }
 
     private fun applyColor(opts: JSONObject?, callback: CallbackContext) {

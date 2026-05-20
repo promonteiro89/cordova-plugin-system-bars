@@ -8,6 +8,7 @@ public class CDVSystemBarsPlugin: CDVPlugin {
     static var currentStyle: UIStatusBarStyle = .default
     static var isHidden: Bool = false
     static var currentAnimation: UIStatusBarAnimation = .fade
+    static var homeIndicatorHidden: Bool = false
 
     private static func animationDuration() -> TimeInterval {
         switch currentAnimation {
@@ -124,6 +125,71 @@ public class CDVSystemBarsPlugin: CDVPlugin {
         }
     }
 
+    @objc(setHomeIndicatorHidden:)
+    func setHomeIndicatorHidden(_ command: CDVInvokedUrlCommand) {
+        let opts = command.argument(at: 0) as? [String: Any] ?? [:]
+        let hidden = (opts["hidden"] as? Bool) ?? false
+        CDVSystemBarsPlugin.homeIndicatorHidden = hidden
+        DispatchQueue.main.async {
+            if #available(iOS 11.0, *) {
+                self.viewController?.setNeedsUpdateOfHomeIndicatorAutoHidden()
+            }
+            let result = CDVPluginResult(status: CDVCommandStatus_OK)
+            self.commandDelegate.send(result, callbackId: command.callbackId)
+        }
+    }
+
+    @objc(getInsets:)
+    func getInsets(_ command: CDVInvokedUrlCommand) {
+        DispatchQueue.main.async {
+            let insets: UIEdgeInsets
+            if #available(iOS 11.0, *) {
+                insets = self.viewController?.view.safeAreaInsets ?? .zero
+            } else {
+                insets = .zero
+            }
+            // iOS returns points natively, which equal CSS pixels.
+            let dict: [String: Any] = [
+                "top": insets.top,
+                "bottom": insets.bottom,
+                "left": insets.left,
+                "right": insets.right
+            ]
+            let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: dict)
+            self.commandDelegate.send(result, callbackId: command.callbackId)
+        }
+    }
+
+    @objc(getInfo:)
+    func getInfo(_ command: CDVInvokedUrlCommand) {
+        let style: String
+        switch CDVSystemBarsPlugin.currentStyle {
+        case .lightContent:
+            style = "DARK"   // light icons → dark background semantics
+        default:
+            if #available(iOS 13.0, *), CDVSystemBarsPlugin.currentStyle == .darkContent {
+                style = "LIGHT"
+            } else {
+                style = "DEFAULT"
+            }
+        }
+
+        // iOS has no separately controllable navigation bar; report a stable
+        // placeholder so cross-platform callers can rely on the same shape.
+        let dict: [String: Any] = [
+            "statusBar": [
+                "visible": !CDVSystemBarsPlugin.isHidden,
+                "style": style
+            ],
+            "navigationBar": [
+                "visible": true,
+                "style": "DEFAULT"
+            ]
+        ]
+        let result = CDVPluginResult(status: CDVCommandStatus_OK, messageAs: dict)
+        self.commandDelegate.send(result, callbackId: command.callbackId)
+    }
+
     @objc(setColor:)
     func setColor(_ command: CDVInvokedUrlCommand) {
         // iOS has no API to set the status-bar or navigation-bar background
@@ -147,5 +213,9 @@ extension CDVViewController {
 
     open override var preferredStatusBarUpdateAnimation: UIStatusBarAnimation {
         return CDVSystemBarsPlugin.currentAnimation
+    }
+
+    open override var prefersHomeIndicatorAutoHidden: Bool {
+        return CDVSystemBarsPlugin.homeIndicatorHidden
     }
 }
