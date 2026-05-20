@@ -8,7 +8,12 @@
     <license>MIT</license>
     <keywords>cordova,outsystems,system-bars,status-bar,navigation-bar,edge-to-edge</keywords>
 
-    <js-module src="www/systembars.js" name="CustomSystemBars">
+    <js-module src="www/systembars.js" name="SystemBars">
+        <!-- Primary access path: cordova.plugins.SystemBars (standard Cordova
+             convention, e.g. cordova.plugins.OSBarcode in OutSystems' barcode
+             plugin). window.CustomSystemBars is retained as a deprecated
+             alias for backwards compatibility with existing Client Actions. -->
+        <clobbers target="cordova.plugins.SystemBars" />
         <clobbers target="window.CustomSystemBars" />
     </js-module>
 
