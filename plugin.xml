@@ -14,9 +14,16 @@
 
     <!-- Android -->
     <platform name="android">
-        <preference name="GradlePluginKotlinEnabled" value="true" />
-        <preference name="GradlePluginKotlinCodeStyle" value="official" />
-        <preference name="GradlePluginKotlinVersion" value="1.9.24" />
+        <!-- Enable the Kotlin Gradle plugin in the consuming app's config.xml so
+             cordova-android applies the kotlin-android plugin during the Gradle
+             build. These must be injected via <config-file>, not declared as
+             bare <preference> elements (which plugman would otherwise treat as
+             required install-time variables and fail with "Variable(s) missing"). -->
+        <config-file target="config.xml" parent="/*">
+            <preference name="GradlePluginKotlinEnabled" value="true" />
+            <preference name="GradlePluginKotlinCodeStyle" value="official" />
+            <preference name="GradlePluginKotlinVersion" value="1.9.24" />
+        </config-file>
 
         <config-file target="res/xml/config.xml" parent="/*">
             <feature name="CustomSystemBars">
