@@ -13,6 +13,8 @@ public class CDVSystemBarsPlugin: CDVPlugin {
         "NONE": .none,
         "FADE": .fade
     ]
+    private static let validStyles: Set<String> = ["DARK", "LIGHT", "DEFAULT"]
+    private static let validBars: Set<String> = ["StatusBar", "NavigationBar"]
 
     public override func pluginInitialize() {
         super.pluginInitialize()
@@ -25,6 +27,22 @@ public class CDVSystemBarsPlugin: CDVPlugin {
     func setStyle(_ command: CDVInvokedUrlCommand) {
         let opts = command.argument(at: 0) as? [String: Any] ?? [:]
         let style = (opts["style"] as? String) ?? "DEFAULT"
+
+        guard CDVSystemBarsPlugin.validStyles.contains(style) else {
+            sendError(command, .invalidInput(
+                method: .setStyle,
+                reason: "'style' must be one of \(Self.validStyleKeys()) (got '\(style)')."
+            ))
+            return
+        }
+        if let bar = opts["bar"] as? String,
+           !CDVSystemBarsPlugin.validBars.contains(bar) {
+            sendError(command, .invalidInput(
+                method: .setStyle,
+                reason: "'bar' must be one of \(Self.validBarKeys()) (got '\(bar)')."
+            ))
+            return
+        }
 
         // 'DARK' / 'LIGHT' describe the background, not the icons — matches
         // Capacitor's enum semantics. 'DARK' background → light icons.
@@ -74,8 +92,13 @@ public class CDVSystemBarsPlugin: CDVPlugin {
     /// subsequent transitions.
     private func setVisibility(hidden: Bool, for command: CDVInvokedUrlCommand) {
         let opts = command.argument(at: 0) as? [String: Any] ?? [:]
-        if (opts["bar"] as? String) == "NavigationBar" {
-            sendOK(command)
+        let bar = opts["bar"] as? String
+
+        if let bar = bar, !CDVSystemBarsPlugin.validBars.contains(bar) {
+            sendError(command, .invalidInput(
+                method: hidden ? .hide : .show,
+                reason: "'bar' must be one of \(Self.validBarKeys()) (got '\(bar)')."
+            ))
             return
         }
 
@@ -88,6 +111,14 @@ public class CDVSystemBarsPlugin: CDVPlugin {
                 return
             }
         }
+
+        // iOS has no separately controllable navigation bar — accept the call
+        // (after validating its inputs) but make no change.
+        if bar == "NavigationBar" {
+            sendOK(command)
+            return
+        }
+
         let overrideAnimation = (opts["animation"] as? String).flatMap { CDVSystemBarsPlugin.validAnimations[$0] }
 
         CDVSystemBarsPlugin.isHidden = hidden
@@ -134,6 +165,14 @@ public class CDVSystemBarsPlugin: CDVPlugin {
 
     private static func validAnimationKeys() -> String {
         return validAnimations.keys.sorted().joined(separator: ", ")
+    }
+
+    private static func validStyleKeys() -> String {
+        return validStyles.sorted().joined(separator: ", ")
+    }
+
+    private static func validBarKeys() -> String {
+        return validBars.sorted().joined(separator: ", ")
     }
 
     private static func animationDuration() -> TimeInterval {

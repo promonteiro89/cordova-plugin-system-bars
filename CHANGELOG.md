@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Changed
+
+- **Docs**: corrected the README's error-handling description — Promise rejections carry a structured `{ code, message }` object (since 1.0.2), not a plain string — and added a dedicated "Error handling" section documenting the `OS-PLUG-SYSBARS-` code table.
+- **Docs**: removed the stray `SLIDE` animation from the Features list. Supported values are `NONE` / `FADE`, matching Capacitor's `SystemBarsAnimation` union (the API reference, TypeScript types, and native code already agreed).
+
+### Fixed
+
+- `setStyle` now validates its `style` argument and rejects out-of-range values with `OS-PLUG-SYSBARS-0005` instead of silently falling back to `DEFAULT`, matching the validation `setAnimation` already performed.
+- `setStyle`, `show`, and `hide` now validate the optional `bar` argument (`StatusBar` / `NavigationBar`) and reject unknown values with `OS-PLUG-SYSBARS-0005` on both Android and iOS.
+
+### Added
+
+- `scripts/version.mjs` — verifies the version is in sync across `plugin.xml`, `package.json`, `packages/outsystems-wrapper/package.json`, and the README install pins, or sets a new version across all of them in one command. Replaces the manual multi-file edit described in CONTRIBUTING.
+
 ## [1.0.2] - 2026-05-20
 
 Structured error payloads, matching the convention used by OutSystems' own first-party Cordova plugins.
@@ -62,6 +78,7 @@ Initial public release.
 - On Android, `setAnimation` and the per-call `animation` parameter validate the value to honor Capacitor's contract; the platform composes its own system-bar animation either way.
 - Capacitor 8's `SystemBars` is bundled with `@capacitor/core` — no separate npm package. ODC apps already have it; only the O11 build needs this plugin installed.
 
+[Unreleased]: https://github.com/promonteiro89/cordova-plugin-system-bars/compare/1.0.2...HEAD
 [1.0.2]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.2
 [1.0.1]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.1
 [1.0.0]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.0

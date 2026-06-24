@@ -13,6 +13,8 @@ class SystemBarsPlugin : CordovaPlugin() {
 
     companion object {
         private val VALID_ANIMATIONS = setOf("NONE", "FADE")
+        private val VALID_STYLES = setOf("DARK", "LIGHT", "DEFAULT")
+        private val VALID_BARS = setOf("StatusBar", "NavigationBar")
     }
 
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
@@ -48,7 +50,22 @@ class SystemBarsPlugin : CordovaPlugin() {
         }
 
         val style = opts?.optString("style", "DEFAULT") ?: "DEFAULT"
-        val bar   = opts?.optString("bar", null)
+        if (style !in VALID_STYLES) {
+            callback.sendError(OSSystemBarsErrors.invalidInput(
+                method = "setStyle",
+                reason = "'style' must be one of ${VALID_STYLES.joinToString()} (got '$style')."
+            ))
+            return
+        }
+
+        val bar = opts?.optString("bar", null)
+        if (bar != null && bar !in VALID_BARS) {
+            callback.sendError(OSSystemBarsErrors.invalidInput(
+                method = "setStyle",
+                reason = "'bar' must be one of ${VALID_BARS.joinToString()} (got '$bar')."
+            ))
+            return
+        }
 
         // Note: 'DARK' / 'LIGHT' describe the background, not the icons —
         // this matches Capacitor's enum semantics. 'LIGHT' background → dark icons.
@@ -90,7 +107,16 @@ class SystemBarsPlugin : CordovaPlugin() {
             return
         }
 
-        val types = when (opts?.optString("bar", null)) {
+        val bar = opts?.optString("bar", null)
+        if (bar != null && bar !in VALID_BARS) {
+            callback.sendError(OSSystemBarsErrors.invalidInput(
+                method = if (show) "show" else "hide",
+                reason = "'bar' must be one of ${VALID_BARS.joinToString()} (got '$bar')."
+            ))
+            return
+        }
+
+        val types = when (bar) {
             "StatusBar"     -> WindowInsetsCompat.Type.statusBars()
             "NavigationBar" -> WindowInsetsCompat.Type.navigationBars()
             else            -> WindowInsetsCompat.Type.systemBars()
