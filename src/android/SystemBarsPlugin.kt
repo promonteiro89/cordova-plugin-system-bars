@@ -17,6 +17,11 @@ class SystemBarsPlugin : CordovaPlugin() {
         private val VALID_BARS = setOf("StatusBar", "NavigationBar")
     }
 
+    // Last style/bar requested via setStyle, so a runtime system-theme change
+    // can re-apply the active style (see onConfigurationChanged).
+    private var lastStyle: String? = null
+    private var lastBar: String? = null
+
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
         when (action) {
             "setStyle"     -> runOnUi(callback, "setStyle") { applyStyle(args.optJSONObject(0), callback) }
@@ -67,8 +72,17 @@ class SystemBarsPlugin : CordovaPlugin() {
             return
         }
 
-        // Note: 'DARK' / 'LIGHT' describe the background, not the icons —
-        // this matches Capacitor's enum semantics. 'LIGHT' background → dark icons.
+        // Remember the request so a runtime theme change can re-derive DEFAULT.
+        lastStyle = style
+        lastBar = bar
+        applyAppearance(controller, style, bar)
+        callback.success()
+    }
+
+    // Note: 'DARK' / 'LIGHT' describe the background, not the icons — this
+    // matches Capacitor's enum semantics. 'LIGHT' background → dark icons.
+    // 'DEFAULT' derives the icon appearance from the current system theme.
+    private fun applyAppearance(controller: WindowInsetsControllerCompat, style: String, bar: String?) {
         val appearanceLight: Boolean = when (style) {
             "LIGHT" -> true
             "DARK"  -> false
@@ -83,8 +97,21 @@ class SystemBarsPlugin : CordovaPlugin() {
                 controller.isAppearanceLightNavigationBars = appearanceLight
             }
         }
+    }
 
-        callback.success()
+    // A runtime light/dark switch makes Android reset the system-bar appearance to
+    // the activity theme's default, discarding whatever setStyle applied. Because
+    // cordova-android keeps `uiMode` in the activity's configChanges, the activity
+    // is NOT recreated and the WebView is NOT reloaded, so the page's setStyle is
+    // not re-run to restore it. Re-apply the last requested style so the app's
+    // runtime choice survives the toggle (DARK/LIGHT stay put; DEFAULT re-derives
+    // from the new theme). Only acts once the app has set a style — otherwise the
+    // platform/MABS default is left untouched. Mirrors Capacitor SystemBars.
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val style = lastStyle ?: return
+        val controller = insetsController() ?: return
+        applyAppearance(controller, style, lastBar)
     }
 
     private fun applyVisibility(opts: JSONObject?, show: Boolean, callback: CallbackContext) {
