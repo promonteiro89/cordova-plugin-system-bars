@@ -17,8 +17,7 @@ class SystemBarsPlugin : CordovaPlugin() {
         private val VALID_BARS = setOf("StatusBar", "NavigationBar")
     }
 
-    // Last style/bar requested via setStyle, so a runtime system-theme change
-    // can re-apply the active style (see onConfigurationChanged).
+    // Last setStyle request, re-applied on a theme change (see onConfigurationChanged).
     private var lastStyle: String? = null
     private var lastBar: String? = null
 
@@ -72,16 +71,14 @@ class SystemBarsPlugin : CordovaPlugin() {
             return
         }
 
-        // Remember the request so a runtime theme change can re-derive DEFAULT.
         lastStyle = style
         lastBar = bar
         applyAppearance(controller, style, bar)
         callback.success()
     }
 
-    // Note: 'DARK' / 'LIGHT' describe the background, not the icons — this
-    // matches Capacitor's enum semantics. 'LIGHT' background → dark icons.
-    // 'DEFAULT' derives the icon appearance from the current system theme.
+    // DARK/LIGHT name the background, not the icons (Capacitor semantics): LIGHT → dark icons.
+    // DEFAULT follows the system theme.
     private fun applyAppearance(controller: WindowInsetsControllerCompat, style: String, bar: String?) {
         val appearanceLight: Boolean = when (style) {
             "LIGHT" -> true
@@ -99,14 +96,9 @@ class SystemBarsPlugin : CordovaPlugin() {
         }
     }
 
-    // A runtime light/dark switch makes Android reset the system-bar appearance to
-    // the activity theme's default, discarding whatever setStyle applied. Because
-    // cordova-android keeps `uiMode` in the activity's configChanges, the activity
-    // is NOT recreated and the WebView is NOT reloaded, so the page's setStyle is
-    // not re-run to restore it. Re-apply the last requested style so the app's
-    // runtime choice survives the toggle (DARK/LIGHT stay put; DEFAULT re-derives
-    // from the new theme). Only acts once the app has set a style — otherwise the
-    // platform/MABS default is left untouched. Mirrors Capacitor SystemBars.
+    // A light/dark switch resets the bars to the theme default, and cordova-android
+    // keeps uiMode in configChanges so the WebView never reloads to re-run setStyle.
+    // Re-apply the last style so the runtime choice survives the toggle.
     override fun onConfigurationChanged(newConfig: Configuration) {
         super.onConfigurationChanged(newConfig)
         val style = lastStyle ?: return
@@ -121,10 +113,7 @@ class SystemBarsPlugin : CordovaPlugin() {
             return
         }
 
-        // The optional per-call 'animation' parameter is validated for API
-        // parity with Capacitor's SystemBarsVisibilityOptions. The platform
-        // animates the transition itself on Android, so the value is accepted
-        // but unused.
+        // 'animation' is validated for Capacitor parity but unused — Android animates its own.
         val animation = opts?.optString("animation", null)
         if (animation != null && animation !in VALID_ANIMATIONS) {
             callback.sendError(OSSystemBarsErrors.invalidInput(
@@ -160,9 +149,7 @@ class SystemBarsPlugin : CordovaPlugin() {
         callback.success()
     }
 
-    // Android composes its own system-bar animations via WindowInsetsController,
-    // so there is no platform hook for this on Android. We validate the value to
-    // match Capacitor's input contract and acknowledge.
+    // No animation hook on Android (the OS composes its own); validate for parity and ack.
     private fun applyAnimation(opts: JSONObject?, callback: CallbackContext) {
         val animation = opts?.optString("animation", "FADE") ?: "FADE"
         if (animation !in VALID_ANIMATIONS) {
