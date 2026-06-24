@@ -1,17 +1,10 @@
 #!/usr/bin/env node
 /**
- * Single source of truth for the plugin version across every file that embeds it.
+ * Check or set the plugin version across package.json, plugin.xml, the wrapper
+ * package.json, and the README install pins.
  *
- *   node scripts/version.mjs            # check: verify every file agrees
- *   node scripts/version.mjs 1.0.3      # set:   rewrite every file to 1.0.3
- *
- * Files kept in sync:
- *   - package.json
- *   - plugin.xml
- *   - packages/outsystems-wrapper/package.json
- *   - README.md  (install-URL pins and the ODC metadata block)
- *
- * No dependencies — runs on any Node with ES module support.
+ *   node scripts/version.mjs          # check that every file agrees
+ *   node scripts/version.mjs 1.0.4    # set the version everywhere
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
@@ -33,7 +26,7 @@ function extract(rel, pattern) {
 const arg = process.argv[2];
 
 if (!arg) {
-    // ---- check mode -------------------------------------------------------
+    // check mode
     const canonical = extract('package.json', PKG_VERSION);
     let ok = true;
 
@@ -71,7 +64,7 @@ if (!arg) {
     process.exit(1);
 }
 
-// ---- set mode -------------------------------------------------------------
+// set mode
 const next = arg.replace(/^v/, '');
 if (!SEMVER.test(next)) {
     console.error(`Invalid version "${arg}" — expected MAJOR.MINOR.PATCH (e.g. 1.0.3).`);

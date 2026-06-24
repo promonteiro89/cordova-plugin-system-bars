@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+
+- **Android**: a runtime system light/dark switch no longer discards the active style. On a `uiMode` change Android resets the system-bar appearance to the activity theme's default, and because the activity isn't recreated the page's `setStyle` isn't re-run to restore it; the plugin now re-applies the last requested style via `onConfigurationChanged`, so a runtime `DARK` / `LIGHT` / `DEFAULT` choice survives the toggle. Matches Capacitor SystemBars.
+
 ## [1.0.3] - 2026-06-24
 
 Runtime input validation, plus documentation and release-tooling fixes.
@@ -80,6 +86,7 @@ Initial public release.
 - On Android, `setAnimation` and the per-call `animation` parameter validate the value to honor Capacitor's contract; the platform composes its own system-bar animation either way.
 - Capacitor 8's `SystemBars` is bundled with `@capacitor/core` — no separate npm package. ODC apps already have it; only the O11 build needs this plugin installed.
 
+[Unreleased]: https://github.com/promonteiro89/cordova-plugin-system-bars/compare/1.0.3...HEAD
 [1.0.3]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.3
 [1.0.2]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.2
 [1.0.1]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.1

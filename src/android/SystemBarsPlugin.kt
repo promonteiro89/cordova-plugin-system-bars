@@ -17,6 +17,10 @@ class SystemBarsPlugin : CordovaPlugin() {
         private val VALID_BARS = setOf("StatusBar", "NavigationBar")
     }
 
+    // Last setStyle request, re-applied on a theme change (see onConfigurationChanged).
+    private var lastStyle: String? = null
+    private var lastBar: String? = null
+
     override fun execute(action: String, args: JSONArray, callback: CallbackContext): Boolean {
         when (action) {
             "setStyle"     -> runOnUi(callback, "setStyle") { applyStyle(args.optJSONObject(0), callback) }
@@ -67,8 +71,15 @@ class SystemBarsPlugin : CordovaPlugin() {
             return
         }
 
-        // Note: 'DARK' / 'LIGHT' describe the background, not the icons —
-        // this matches Capacitor's enum semantics. 'LIGHT' background → dark icons.
+        lastStyle = style
+        lastBar = bar
+        applyAppearance(controller, style, bar)
+        callback.success()
+    }
+
+    // DARK/LIGHT name the background, not the icons (Capacitor semantics): LIGHT → dark icons.
+    // DEFAULT follows the system theme.
+    private fun applyAppearance(controller: WindowInsetsControllerCompat, style: String, bar: String?) {
         val appearanceLight: Boolean = when (style) {
             "LIGHT" -> true
             "DARK"  -> false
@@ -83,8 +94,16 @@ class SystemBarsPlugin : CordovaPlugin() {
                 controller.isAppearanceLightNavigationBars = appearanceLight
             }
         }
+    }
 
-        callback.success()
+    // A light/dark switch resets the bars to the theme default, and cordova-android
+    // keeps uiMode in configChanges so the WebView never reloads to re-run setStyle.
+    // Re-apply the last style so the runtime choice survives the toggle.
+    override fun onConfigurationChanged(newConfig: Configuration) {
+        super.onConfigurationChanged(newConfig)
+        val style = lastStyle ?: return
+        val controller = insetsController() ?: return
+        applyAppearance(controller, style, lastBar)
     }
 
     private fun applyVisibility(opts: JSONObject?, show: Boolean, callback: CallbackContext) {
@@ -94,10 +113,7 @@ class SystemBarsPlugin : CordovaPlugin() {
             return
         }
 
-        // The optional per-call 'animation' parameter is validated for API
-        // parity with Capacitor's SystemBarsVisibilityOptions. The platform
-        // animates the transition itself on Android, so the value is accepted
-        // but unused.
+        // 'animation' is validated for Capacitor parity but unused — Android animates its own.
         val animation = opts?.optString("animation", null)
         if (animation != null && animation !in VALID_ANIMATIONS) {
             callback.sendError(OSSystemBarsErrors.invalidInput(
@@ -133,9 +149,7 @@ class SystemBarsPlugin : CordovaPlugin() {
         callback.success()
     }
 
-    // Android composes its own system-bar animations via WindowInsetsController,
-    // so there is no platform hook for this on Android. We validate the value to
-    // match Capacitor's input contract and acknowledge.
+    // No animation hook on Android (the OS composes its own); validate for parity and ack.
     private fun applyAnimation(opts: JSONObject?, callback: CallbackContext) {
         val animation = opts?.optString("animation", "FADE") ?: "FADE"
         if (animation !in VALID_ANIMATIONS) {

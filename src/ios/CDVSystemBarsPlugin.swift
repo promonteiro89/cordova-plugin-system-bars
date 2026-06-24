@@ -44,8 +44,7 @@ public class CDVSystemBarsPlugin: CDVPlugin {
             return
         }
 
-        // 'DARK' / 'LIGHT' describe the background, not the icons — matches
-        // Capacitor's enum semantics. 'DARK' background → light icons.
+        // DARK/LIGHT name the background, not the icons (Capacitor semantics): DARK → light icons.
         switch style {
         case "DARK":  CDVSystemBarsPlugin.currentStyle = .lightContent
         case "LIGHT": CDVSystemBarsPlugin.currentStyle = .darkContent
@@ -83,13 +82,6 @@ public class CDVSystemBarsPlugin: CDVPlugin {
 
     // MARK: - Helpers
 
-    /// iOS has no separately controllable navigation bar — `bar: "NavigationBar"`
-    /// resolves successfully but does not change visibility.
-    ///
-    /// Supports a per-call `animation` override (Capacitor's
-    /// `SystemBarsVisibilityOptions.animation`). The override applies to this
-    /// transition only — the value set by `setAnimation` is preserved for
-    /// subsequent transitions.
     private func setVisibility(hidden: Bool, for command: CDVInvokedUrlCommand) {
         let opts = command.argument(at: 0) as? [String: Any] ?? [:]
         let bar = opts["bar"] as? String
@@ -112,13 +104,13 @@ public class CDVSystemBarsPlugin: CDVPlugin {
             }
         }
 
-        // iOS has no separately controllable navigation bar — accept the call
-        // (after validating its inputs) but make no change.
+        // No separate navigation bar on iOS — accept the call but do nothing.
         if bar == "NavigationBar" {
             sendOK(command)
             return
         }
 
+        // Per-call override; applies to this transition only, setAnimation is preserved.
         let overrideAnimation = (opts["animation"] as? String).flatMap { CDVSystemBarsPlugin.validAnimations[$0] }
 
         CDVSystemBarsPlugin.isHidden = hidden
@@ -185,10 +177,7 @@ public class CDVSystemBarsPlugin: CDVPlugin {
 
 // MARK: - Status-bar overrides
 
-// On a Cordova build the app's root view controller is a `CDVViewController`,
-// so the extension below is what the UIKit lookup hits for
-// `preferredStatusBarStyle` / `prefersStatusBarHidden` /
-// `preferredStatusBarUpdateAnimation`.
+// Cordova's root VC is a CDVViewController; UIKit reads the status-bar overrides from here.
 extension CDVViewController {
     open override var preferredStatusBarStyle: UIStatusBarStyle {
         return CDVSystemBarsPlugin.currentStyle
@@ -203,13 +192,8 @@ extension CDVViewController {
     }
 }
 
-// On an ODC build the root view controller is `CAPBridgeViewController`
-// (which does NOT inherit from `CDVViewController`), so the same overrides
-// have to be installed on it for the status-bar changes to actually take
-// effect when this plugin is installed via Capacitor's Cordova compat
-// layer. The `canImport(Capacitor)` guard means this block only compiles
-// when the Capacitor framework is present in the build, which is exactly
-// the case where the Cordova build is *not* what's running.
+// On ODC the root VC is CAPBridgeViewController (not a CDVViewController), so it needs
+// the same overrides. The guard compiles this only when Capacitor is in the build.
 #if canImport(Capacitor)
 import Capacitor
 
