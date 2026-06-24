@@ -83,7 +83,7 @@ const current = extract('package.json', PKG_VERSION);
 const edits = [
     ['package.json', (t) => t.replace(PKG_VERSION, `"version": "${next}"`)],
     ['packages/outsystems-wrapper/package.json', (t) => t.replace(PKG_VERSION, `"version": "${next}"`)],
-    ['plugin.xml', (t) => t.replace(XML_VERSION, `id="com.outsystemscloud.systembars" version="${next}"`)],
+    ['plugin.xml', (t) => t.replace(/(id="com\.outsystemscloud\.systembars"\s+version=")\d+\.\d+\.\d+(")/, `$1${next}$2`)],
     [
         'README.md',
         (t) =>

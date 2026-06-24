@@ -69,7 +69,7 @@ Paste this into the **Extensibility Configurations** property of your OutSystems
 ```json
 {
   "plugin": {
-    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.2"
+    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.3"
   }
 }
 ```
@@ -85,19 +85,19 @@ OutSystems Extensibility Configurations:
 ```json
 {
   "plugin": {
-    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.2"
+    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.3"
   },
   "buildConfigurations": {
     "cordova": {
       "source": {
-        "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.2"
+        "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.3"
       }
     }
   },
   "metadata": {
     "mabs-min": "12.0.0",
     "name": "SystemBars",
-    "version": "1.0.2"
+    "version": "1.0.3"
   }
 }
 ```
@@ -112,14 +112,14 @@ const SystemBars =
 SystemBars.setStyle({ style: 'DARK' });
 ```
 
-> **Advanced**: if you'd rather route all SystemBars calls through *this* Cordova plugin on ODC too (instead of `@capacitor/core`'s built-in), add a `"capacitor": { "source": { "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.2" } }` block alongside `cordova` and Capacitor will install this plugin via its [Cordova-plugin compat layer](https://capacitorjs.com/docs/plugins/cordova). The iOS code already handles this case — it extends both `CDVViewController` and (under `#if canImport(Capacitor)`) `CAPBridgeViewController` so the status-bar overrides take effect on either root VC. This is unconventional (the OutSystems convention reserves `buildConfigurations.capacitor` for Capacitor-native packages) but functional.
+> **Advanced**: if you'd rather route all SystemBars calls through *this* Cordova plugin on ODC too (instead of `@capacitor/core`'s built-in), add a `"capacitor": { "source": { "npm": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.3" } }` block alongside `cordova` and Capacitor will install this plugin via its [Cordova-plugin compat layer](https://capacitorjs.com/docs/plugins/cordova). The iOS code already handles this case — it extends both `CDVViewController` and (under `#if canImport(Capacitor)`) `CAPBridgeViewController` so the status-bar overrides take effect on either root VC. This is unconventional (the OutSystems convention reserves `buildConfigurations.capacitor` for Capacitor-native packages) but functional.
 
 ### Cordova CLI
 
 For local testing in a vanilla Cordova project:
 
 ```sh
-cordova plugin add https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.2
+cordova plugin add https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.3
 ```
 
 ### Cross-runtime wrapper (`OSSystemBarsWrapper`)
@@ -269,7 +269,7 @@ If you also need the plugin install entry in the same JSON, merge the two object
     ]
   },
   "plugin": {
-    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.2"
+    "url": "https://github.com/promonteiro89/cordova-plugin-system-bars.git#1.0.3"
   }
 }
 ```

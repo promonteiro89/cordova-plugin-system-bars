@@ -4,7 +4,9 @@ All notable changes to this project will be documented in this file.
 
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [1.0.3] - 2026-06-24
+
+Runtime input validation, plus documentation and release-tooling fixes.
 
 ### Changed
 
@@ -78,7 +80,7 @@ Initial public release.
 - On Android, `setAnimation` and the per-call `animation` parameter validate the value to honor Capacitor's contract; the platform composes its own system-bar animation either way.
 - Capacitor 8's `SystemBars` is bundled with `@capacitor/core` — no separate npm package. ODC apps already have it; only the O11 build needs this plugin installed.
 
-[Unreleased]: https://github.com/promonteiro89/cordova-plugin-system-bars/compare/1.0.2...HEAD
+[1.0.3]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.3
 [1.0.2]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.2
 [1.0.1]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.1
 [1.0.0]: https://github.com/promonteiro89/cordova-plugin-system-bars/releases/tag/1.0.0
