@@ -24,6 +24,7 @@ A Cordova port of **Capacitor's SystemBars API** for OutSystems 11 / MABS 12. Th
   - [`setAnimation(options)`](#setanimationoptions)
   - [`show(options?)`](#showoptions)
   - [`hide(options?)`](#hideoptions)
+- [Error handling](#error-handling)
 - [Style semantics](#style-semantics)
 - [Declarative configuration (MABS 12 preferences)](#declarative-configuration-mabs-12-preferences)
   - [Where to set the preferences](#where-to-set-the-preferences)
@@ -43,7 +44,7 @@ MABS 12 / `cordova-android` 14 already cover the **declarative** side of system-
 - Promise-based JavaScript API.
 - Runtime style toggling per bar (`StatusBar` / `NavigationBar`) on Android.
 - Runtime visibility control with `BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE` on Android so the user can still swipe to reveal hidden bars.
-- Configurable show/hide animation on iOS (`NONE` / `SLIDE` / `FADE`).
+- Configurable show/hide animation on iOS (`NONE` / `FADE`).
 - Bakes `UIViewControllerBasedStatusBarAppearance = true` into the iOS `Info.plist` automatically.
 - Does not fight MABS 12 platform preferences — declarative startup configuration is left entirely to the platform.
 
@@ -154,7 +155,7 @@ cordova.plugins.SystemBars.show();
 cordova.plugins.SystemBars.setAnimation({ animation: 'FADE' });
 ```
 
-All methods return a `Promise<void>` that rejects with a string error message on failure.
+All methods return a `Promise<void>` that rejects with a structured `{ code, message }` error object on failure — see [Error handling](#error-handling).
 
 ## API reference
 
@@ -194,6 +195,26 @@ Hides the system bars (or just one). On Android the controller is set to `BEHAVI
 |-----------|------|----------|-------------|
 | `options.bar` | `'StatusBar' \| 'NavigationBar'` | no | Restrict to a single bar. Omit to hide all. iOS treats `NavigationBar` as a no-op. |
 | `options.animation` | `'NONE' \| 'FADE'` | no | Per-call animation override (iOS only). Applies to this transition only — the value set by `setAnimation` is preserved for subsequent calls. |
+
+## Error handling
+
+Every method returns `Promise<void>` and rejects with a structured error object — never a bare string — so consumers can branch on a stable `code`:
+
+```javascript
+cordova.plugins.SystemBars.setAnimation({ animation: 'SLIDE' })
+    .catch(function (err) {
+        console.error(err.code);    // "OS-PLUG-SYSBARS-0005"
+        console.error(err.message); // "The 'setAnimation' input parameters aren't valid: ..."
+    });
+```
+
+Out-of-range `style`, `bar`, or `animation` values are rejected with `OS-PLUG-SYSBARS-0005` rather than silently ignored.
+
+| Code | Meaning |
+|------|---------|
+| `OS-PLUG-SYSBARS-0005` | Invalid input — an out-of-range `style`, `bar`, or `animation` value. |
+| `OS-PLUG-SYSBARS-0010` | `WindowInsetsController` unavailable on the device (Android only). |
+| `OS-PLUG-SYSBARS-0013` | Operation failed — caught native-exception fallback (Android only). |
 
 ## Style semantics
 

@@ -30,7 +30,7 @@ When filing a bug, please include:
    - Each method you touched works on both Android (test on API 24, API 30, and API 35+ if you can) and iOS (iOS 13 and the latest).
    - Edge-to-edge rendering is not broken — the app content should still draw behind the system bars.
 4. Update the README if the public API or behavior changes.
-5. Bump the version following [SemVer](https://semver.org/) if your change is user-visible. The version appears in three places that must stay in sync: `plugin.xml`, `package.json`, and `packages/outsystems-wrapper/package.json`.
+5. Bump the version following [SemVer](https://semver.org/) if your change is user-visible. The version appears in three files that must stay in sync — `plugin.xml`, `package.json`, and `packages/outsystems-wrapper/package.json` — plus the install-URL pins in the README. Run `node scripts/version.mjs <new-version>` to update them all at once, or `node scripts/version.mjs` with no argument to verify they already agree.
 6. If you touched `packages/outsystems-wrapper/src/`, run `npm install && npm run build` in that directory and commit the regenerated `dist/`.
 
 ## Pull request checklist
@@ -38,6 +38,7 @@ When filing a bug, please include:
 - [ ] The JS surface still matches Capacitor's `SystemBars` API (or the deviation is documented and discussed in an issue).
 - [ ] `plugin.xml` is valid XML (`xmllint --noout plugin.xml`).
 - [ ] `package.json` is valid JSON.
+- [ ] Version is in sync across all files (`node scripts/version.mjs`).
 - [ ] Style enum semantics (`DARK` = light icons, `LIGHT` = dark icons) are preserved.
 - [ ] README is updated if behavior changed.
 - [ ] You have tested on at least one Android API level and one iOS version.
